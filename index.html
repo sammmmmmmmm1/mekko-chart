@@ -27,17 +27,17 @@
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Chart card */
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.5rem 1rem 2.75rem; }
-  .chart-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 10px; flex-wrap: wrap; }
-  .chart-total { font-size: 13px; font-weight: 600; color: var(--text2); font-family: 'DM Mono', monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
-  .units-wrap { display: flex; align-items: center; gap: 6px; }
-  .units-label { font-size: 12px; color: var(--text2); }
-  .units-select { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; outline: none; cursor: pointer; }
+  /* Chart toolbar — single compact row above chart card */
+  .chart-toolbar { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .tb-sep { width: 1px; height: 18px; background: var(--border2); flex-shrink: 0; margin: 0 2px; }
+  .units-wrap { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .units-label { font-size: 11px; color: var(--text3); white-space: nowrap; }
+  .units-select { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; outline: none; cursor: pointer; }
   .units-select:focus { border-color: var(--border2); }
-  .label-mode-toggle { display: flex; gap: 2px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
-  .label-mode-btn { padding: 3px 10px; border-radius: 4px; border: none; background: transparent; cursor: pointer; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text2); font-weight: 500; transition: all 0.12s; white-space: nowrap; }
+  .label-mode-toggle { display: flex; gap: 1px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; flex-shrink: 0; }
+  .label-mode-btn { padding: 2px 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer; font-size: 11px; font-family: 'DM Sans', sans-serif; color: var(--text2); font-weight: 500; transition: all 0.12s; white-space: nowrap; }
   .label-mode-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.07); }
+  .tb-spacer { flex: 1; min-width: 0; }
 
   /* Editable inline titles — look like real text, only reveal edit on hover */
   .title-block { margin-bottom: 4px; }
@@ -121,7 +121,8 @@
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
-  /* Color picker */
+  /* Chart card */
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.5rem 1rem 2.75rem; }
   .color-popover { position: fixed; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 14px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: none; width: 228px; }
   .color-popover h4 { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .color-swatches { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 10px; }
@@ -132,11 +133,11 @@
   .color-popover-footer label { font-size: 12px; color: var(--text2); }
 
   /* Color scheme picker */
-  .scheme-picker { display: flex; gap: 5px; align-items: center; }
-  .scheme-swatch { display: flex; border-radius: 5px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.12s; height: 22px; }
-  .scheme-swatch:hover { transform: scale(1.08); }
+  .scheme-picker { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+  .scheme-swatch { display: flex; border-radius: 4px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.12s; height: 18px; }
+  .scheme-swatch:hover { transform: scale(1.1); }
   .scheme-swatch.active { border-color: var(--text); }
-  .scheme-swatch span { display: block; width: 10px; height: 100%; }
+  .scheme-swatch span { display: block; width: 8px; height: 100%; }
 
   /* Drag-sortable col blocks */
   .col-block.dragging { opacity: 0.45; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
@@ -161,42 +162,42 @@
 
   <!-- CHART TAB -->
   <div id="panel-chart" class="panel active">
-    <div class="chart-card">
 
-      <!-- Toolbar -->
-      <div class="chart-toolbar">
-        <div class="units-wrap">
-          <span class="units-label">Units:</span>
-          <select class="units-select" id="units-select" onchange="drawChart()">
-            <option value="raw">None (raw numbers)</option>
-            <option value="dollar" selected>$ (dollars)</option>
-            <option value="k">$k (thousands)</option>
-            <option value="M">$M (millions)</option>
-            <option value="B">$B (billions)</option>
-            <option value="pct">% (percent of total)</option>
-          </select>
-        </div>
-        <div class="units-wrap">
-          <span class="units-label">Labels:</span>
-          <div class="label-mode-toggle" id="label-mode-toggle">
-            <button class="label-mode-btn" data-mode="name" onclick="setLabelMode('name')">Row</button>
-            <button class="label-mode-btn active" data-mode="both" onclick="setLabelMode('both')">Both</button>
-            <button class="label-mode-btn" data-mode="value" onclick="setLabelMode('value')">Value</button>
-            <button class="label-mode-btn" data-mode="none" onclick="setLabelMode('none')">None</button>
-          </div>
-        </div>
-        <div class="units-wrap">
-          <span class="units-label">Theme:</span>
-          <div class="scheme-picker" id="scheme-picker"></div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="chart-hint">Click a segment to change color</span>
-          <span class="chart-total" id="chart-total"></span>
-          <button class="btn" onclick="downloadPNG()" title="Download as PNG" style="display:flex;align-items:center;gap:5px;padding:6px 12px;">
-            <span style="font-size:14px;">↓</span> PNG
-          </button>
+    <!-- Compact toolbar above chart card -->
+    <div class="chart-toolbar">
+      <div class="units-wrap">
+        <span class="units-label">Units</span>
+        <select class="units-select" id="units-select" onchange="drawChart()">
+          <option value="raw">None</option>
+          <option value="dollar" selected>$</option>
+          <option value="k">$k</option>
+          <option value="M">$M</option>
+          <option value="B">$B</option>
+          <option value="pct">%</option>
+        </select>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="units-wrap">
+        <span class="units-label">Labels</span>
+        <div class="label-mode-toggle" id="label-mode-toggle">
+          <button class="label-mode-btn" data-mode="name" onclick="setLabelMode('name')">Row</button>
+          <button class="label-mode-btn active" data-mode="both" onclick="setLabelMode('both')">Both</button>
+          <button class="label-mode-btn" data-mode="value" onclick="setLabelMode('value')">Value</button>
+          <button class="label-mode-btn" data-mode="none" onclick="setLabelMode('none')">None</button>
         </div>
       </div>
+      <div class="tb-sep"></div>
+      <div class="units-wrap">
+        <span class="units-label">Theme</span>
+        <div class="scheme-picker" id="scheme-picker"></div>
+      </div>
+      <div class="tb-spacer"></div>
+      <button class="btn" onclick="downloadPNG()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;font-size:12px;flex-shrink:0;">
+        <span style="font-size:13px;">↓</span> PNG
+      </button>
+    </div>
+
+    <div class="chart-card">
 
       <!-- Chart title (inline editable) -->
       <div class="title-block">
@@ -234,7 +235,7 @@
 
       <div class="legend" id="legend"></div>
     </div>
-  </div>
+  </div><!-- end panel-chart -->
 
   <!-- DATA TAB -->
   <div id="panel-data" class="panel">
@@ -430,7 +431,6 @@ function downloadPNG() {
   const titleText = document.getElementById('chart-title').textContent.trim();
   const xTitle = document.getElementById('x-axis-title').textContent.trim();
   const yTitle = document.getElementById('y-axis-title').textContent.trim();
-  const totalText = document.getElementById('chart-total').textContent.trim();
 
   // Collect legend items
   const legendItems = [];
@@ -454,12 +454,8 @@ function downloadPNG() {
   if (titleText) {
     svgContent += `<text x="12" y="22" font-size="15" font-weight="600" fill="#1a1917" font-family="sans-serif">${esc(titleText)}</text>`;
   }
-  // Total badge
-  if (totalText) {
-    svgContent += `<text x="${W-12}" y="22" font-size="12" fill="#6b6860" font-family="monospace" text-anchor="end">${esc(totalText)}</text>`;
-  }
 
-  // Chart SVG content (shifted down by topPad)
+  // Chart SVG content (shifted down by topPad) — total badge is already inside svg.innerHTML
   svgContent += `<g transform="translate(0,${topPad})">${svg.innerHTML}</g>`;
 
   // Y axis title — rotated, centered on left side
@@ -678,12 +674,16 @@ function drawChart(){
   const grandTotal=colTotals.reduce((a,b)=>a+b,0);
   const units=getUnits();
 
-  document.getElementById('chart-total').textContent=grandTotal>0?fmtTotal(grandTotal,units):'';
+  document.getElementById('chart-total')&&(document.getElementById('chart-total').textContent='');
 
   if(grandTotal===0){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#aaa" font-family="sans-serif" font-size="14">No data to display</text>`;return;}
 
-  let rects='',labels='',axes='',xCursor=0;
+  let rects='',labels='',axes='',overlay='',xCursor=0;
   const colMeta=[];
+
+  // Total badge rendered in SVG top-right
+  const totalStr=fmtTotal(grandTotal,units);
+  overlay+=`<text x="${W-PAD.right}" y="${PAD.top-4}" text-anchor="end" font-size="11" font-family="monospace" fill="#9e9c96">${esc(totalStr)}</text>`;
 
   state.columns.forEach((col,ci)=>{
     const colTotal=colTotals[ci],colFrac=colTotal/grandTotal;
@@ -779,7 +779,7 @@ function drawChart(){
   });
 
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  svg.innerHTML=axes+rects+labels;
+  svg.innerHTML=axes+rects+labels+overlay;
 
   svg.querySelectorAll('rect[data-row]').forEach(r=>{
     r.addEventListener('mouseenter',e=>{
