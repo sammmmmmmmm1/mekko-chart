@@ -764,18 +764,7 @@ function drawChart(){
     axes+=`<text x="${mid}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="sans-serif" font-weight="500">${esc(c.name)}</text>`;
     axes+=`<text x="${mid}" y="${PAD.top+cH+30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="monospace">${c.pct}%</text>`;
     if(c.x>PAD.left)axes+=`<line x1="${c.x}" y1="${PAD.top}" x2="${c.x}" y2="${PAD.top+cH}" stroke="#e8e6de" stroke-width="0.5"/>`;
-    // Reorder arrows: ◀ left, ▶ right — only show when there's room and a neighbour exists
-    if(c.w>44){
-      const ay=PAD.top+cH+22, r=7;
-      if(ci>0){
-        axes+=`<circle cx="${c.x+14}" cy="${ay}" r="${r}" fill="transparent" stroke="#c8c6bc" stroke-width="1" style="cursor:pointer;" onclick="moveColumn(${ci},-1)"/>`;
-        axes+=`<text x="${c.x+14}" y="${ay+4}" text-anchor="middle" font-size="9" fill="#6b6860" style="cursor:pointer;pointer-events:none;">◀</text>`;
-      }
-      if(ci<state.columns.length-1){
-        axes+=`<circle cx="${c.x+c.w-14}" cy="${ay}" r="${r}" fill="transparent" stroke="#c8c6bc" stroke-width="1" style="cursor:pointer;" onclick="moveColumn(${ci},1)"/>`;
-        axes+=`<text x="${c.x+c.w-14}" y="${ay+4}" text-anchor="middle" font-size="9" fill="#6b6860" style="cursor:pointer;pointer-events:none;">▶</text>`;
-      }
-    }
+    // Reorder arrows removed — use drag handles in Edit data tab instead
   });
 
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
