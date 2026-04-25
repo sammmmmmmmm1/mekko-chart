@@ -20,9 +20,8 @@
 
   header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
   header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
-  header span { font-size: 13px; color: var(--text2); font-family: 'DM Mono', monospace; }
 
-  .btn-analyze { display: flex; align-items: center; gap: 7px; padding: 8px 20px; border-radius: var(--radius); border: none; background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; letter-spacing: 0.1px; flex-shrink: 0; }
+  .btn-analyze { display: flex; align-items: center; gap: 7px; padding: 8px 20px; border-radius: var(--radius); border: none; background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; flex-shrink: 0; }
   .btn-analyze:hover { opacity: 0.82; }
   .btn-analyze:disabled { opacity: 0.45; cursor: not-allowed; }
   .btn-analyze .spark { font-size: 14px; }
@@ -33,7 +32,7 @@
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Analysis panel */
+  /* Analysis */
   .analysis-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1.5rem; overflow: hidden; display: none; }
   .analysis-panel.visible { display: block; }
   .analysis-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface2); }
@@ -42,15 +41,11 @@
   .btn-close { width: 26px; height: 26px; border-radius: 6px; border: none; background: transparent; cursor: pointer; font-size: 14px; color: var(--text3); display: flex; align-items: center; justify-content: center; }
   .btn-close:hover { background: var(--border); color: var(--text); }
   .analysis-body { padding: 20px 20px 24px; }
-
-  /* Loading dots */
   .loading-dots { display: flex; align-items: center; gap: 5px; padding: 4px 0; }
   .loading-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); display: inline-block; animation: dotbounce 1.2s ease-in-out infinite; }
   .loading-dots span:nth-child(2) { animation-delay: 0.18s; }
   .loading-dots span:nth-child(3) { animation-delay: 0.36s; }
   @keyframes dotbounce { 0%,80%,100%{transform:translateY(0);opacity:0.5} 40%{transform:translateY(-5px);opacity:1} }
-
-  /* Takeaway cards */
   .takeaways { display: flex; flex-direction: column; gap: 10px; }
   .takeaway { border-left: 3px solid var(--border2); padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; background: var(--surface2); }
   .takeaway.highlight { border-left-color: var(--accent); }
@@ -63,9 +58,40 @@
   .takeaway-text { font-size: 14px; line-height: 1.7; color: var(--text); }
   .takeaway-text strong { font-weight: 600; }
 
-  /* Streaming cursor */
-  .cursor { display: inline-block; width: 2px; height: 13px; background: var(--text2); margin-left: 2px; vertical-align: middle; animation: blink 0.85s step-end infinite; }
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  /* Chart card */
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.5rem 1rem; }
+  .chart-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; gap: 10px; flex-wrap: wrap; }
+  .chart-hint { font-size: 12px; color: var(--text3); }
+  .chart-total { font-size: 13px; font-weight: 600; color: var(--text2); font-family: 'DM Mono', monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
+
+  /* Editable titles */
+  .chart-title-wrap { margin-bottom: 0.25rem; }
+  .editable-title { font-size: 15px; font-weight: 600; color: var(--text); border: none; outline: none; background: transparent; width: 100%; font-family: 'DM Sans', sans-serif; padding: 3px 6px; border-radius: 5px; transition: background 0.15s; }
+  .editable-title:hover { background: var(--surface2); }
+  .editable-title:focus { background: var(--surface2); outline: 1.5px solid var(--border2); }
+  .editable-title::placeholder { color: var(--text3); font-weight: 400; }
+  .axis-titles { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; gap: 8px; }
+  .editable-axis { font-size: 12px; color: var(--text2); border: none; outline: none; background: transparent; font-family: 'DM Sans', sans-serif; padding: 2px 6px; border-radius: 5px; transition: background 0.15s; min-width: 60px; }
+  .editable-axis:hover { background: var(--surface2); }
+  .editable-axis:focus { background: var(--surface2); outline: 1.5px solid var(--border2); }
+  .editable-axis::placeholder { color: var(--text3); }
+  .editable-axis.y-title { writing-mode: horizontal-tb; }
+
+  /* Units picker */
+  .units-wrap { display: flex; align-items: center; gap: 6px; }
+  .units-label { font-size: 12px; color: var(--text2); }
+  .units-select { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; outline: none; cursor: pointer; }
+  .units-select:focus { border-color: var(--border2); }
+
+  .chart-wrap { position: relative; width: 100%; height: 380px; margin-bottom: 0.25rem; }
+  svg.mekko { width: 100%; height: 100%; overflow: visible; }
+  .tooltip { position: absolute; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; pointer-events: none; display: none; z-index: 10; line-height: 1.7; min-width: 160px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .tooltip strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .tip-pct { color: var(--text2); font-size: 11px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); cursor: pointer; padding: 3px 6px; border-radius: 5px; transition: background 0.1s; }
+  .legend-item:hover { background: var(--surface2); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
   /* Drop zone */
   .drop-zone { border: 2px dashed var(--border2); border-radius: var(--radius-lg); padding: 2rem 1.5rem; text-align: center; background: var(--surface); cursor: pointer; transition: all 0.15s; margin-bottom: 1.25rem; position: relative; }
@@ -77,22 +103,8 @@
   .drop-zone.has-file { border-color: var(--green); background: var(--green-bg); }
   .drop-zone.has-file .drop-zone-title { color: var(--green); }
 
-  /* Toast */
   .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 10px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 200; white-space: nowrap; }
   .toast.show { opacity: 1; }
-
-  /* Chart */
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
-  .chart-hint { font-size: 12px; color: var(--text3); margin-bottom: 0.75rem; }
-  .chart-wrap { position: relative; width: 100%; height: 400px; margin-bottom: 1rem; }
-  svg.mekko { width: 100%; height: 100%; overflow: visible; }
-  .tooltip { position: absolute; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; pointer-events: none; display: none; z-index: 10; line-height: 1.7; min-width: 160px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-  .tooltip strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
-  .tip-pct { color: var(--text2); font-size: 11px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
-  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); cursor: pointer; padding: 3px 6px; border-radius: 5px; transition: background 0.1s; }
-  .legend-item:hover { background: var(--surface2); }
-  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
   /* Data editor */
   .data-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
@@ -165,11 +177,42 @@
   <!-- CHART TAB -->
   <div id="panel-chart" class="panel active">
     <div class="chart-card">
-      <p class="chart-hint">Click any segment or legend item to change its color.</p>
+
+      <!-- Toolbar: hint + units + total -->
+      <div class="chart-toolbar">
+        <div class="units-wrap">
+          <span class="units-label">Units:</span>
+          <select class="units-select" id="units-select" onchange="drawChart()">
+            <option value="raw">None (raw numbers)</option>
+            <option value="dollar" selected>$ (dollars)</option>
+            <option value="k">$k (thousands)</option>
+            <option value="M">$M (millions)</option>
+            <option value="pct">% (percent of total)</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span class="chart-hint">Click a segment to change color</span>
+          <span class="chart-total" id="chart-total"></span>
+        </div>
+      </div>
+
+      <!-- Editable chart title -->
+      <div class="chart-title-wrap">
+        <input class="editable-title" id="chart-title" type="text" placeholder="Click to add chart title…" />
+      </div>
+
+      <!-- Chart -->
       <div class="chart-wrap" id="chart-wrap">
         <svg class="mekko" id="mekko-svg"></svg>
         <div class="tooltip" id="tooltip"></div>
       </div>
+
+      <!-- X and Y axis titles below/beside chart -->
+      <div class="axis-titles">
+        <input class="editable-axis" id="y-axis-title" type="text" placeholder="Y axis label…" style="width:110px;" />
+        <input class="editable-axis" id="x-axis-title" type="text" placeholder="X axis label…" style="text-align:right;width:110px;" />
+      </div>
+
       <div class="legend" id="legend"></div>
     </div>
   </div>
@@ -270,114 +313,102 @@ let state = {
 
 function getColor(row,i){return state.colors[row]||PALETTE[i%PALETTE.length];}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function fmt(n){return '$'+n.toLocaleString();}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
-// ── AI Analysis ───────────────────────────────────────────
-function buildDataSummary() {
-  const colTotals = state.columns.map(c => c.values.reduce((a,b)=>a+b,0));
-  const grandTotal = colTotals.reduce((a,b)=>a+b,0);
+// ── Units & formatting ────────────────────────────────────
+function getUnits(){ return document.getElementById('units-select').value; }
 
-  let lines = [];
-  lines.push(`This is a Mekko (Marimekko) chart. Column width = column's share of grand total. Each column stacks to 100%.`);
-  lines.push(`Grand total: $${grandTotal.toLocaleString()}`);
-  lines.push('');
-  lines.push('Columns (left to right):');
-  state.columns.forEach((col, ci) => {
-    const pct = Math.round(colTotals[ci]/grandTotal*100);
-    lines.push(`  ${col.name}: $${colTotals[ci].toLocaleString()} (${pct}% of total)`);
-    state.rows.forEach((row, ri) => {
-      const val = col.values[ri]||0;
-      const pctCol = colTotals[ci]>0 ? Math.round(val/colTotals[ci]*100) : 0;
-      const pctTotal = Math.round(val/grandTotal*100);
-      lines.push(`    ${row}: $${val.toLocaleString()} (${pctCol}% of ${col.name}, ${pctTotal}% of total)`);
+function fmtVal(v, units) {
+  units = units || getUnits();
+  const raw = state.columns.reduce((s,c)=>s+c.values.reduce((a,b)=>a+b,0),0);
+  switch(units) {
+    case 'raw':    return v.toLocaleString();
+    case 'dollar': return '$'+v.toLocaleString();
+    case 'k':      return '$'+(v/1000).toFixed(1)+'k';
+    case 'M':      return '$'+(v/1000000).toFixed(2)+'M';
+    case 'pct':    return raw>0 ? (v/raw*100).toFixed(1)+'%' : '0%';
+    default:       return v.toLocaleString();
+  }
+}
+
+function fmtLabel(v, rectW, units) {
+  units = units || getUnits();
+  const grandTotal = state.columns.reduce((s,c)=>s+c.values.reduce((a,b)=>a+b,0),0);
+  switch(units) {
+    case 'raw':    return rectW<70 ? v.toLocaleString() : v.toLocaleString();
+    case 'dollar': return v>=1e6 ? '$'+(v/1e6).toFixed(1)+'M' : v>=1000 ? '$'+Math.round(v/1000)+'k' : '$'+v;
+    case 'k':      return '$'+(v/1000).toFixed(1)+'k';
+    case 'M':      return '$'+(v/1e6).toFixed(2)+'M';
+    case 'pct':    return grandTotal>0 ? (v/grandTotal*100).toFixed(1)+'%' : '0%';
+    default:       return v.toLocaleString();
+  }
+}
+
+function fmtTotal(grandTotal, units) {
+  switch(units) {
+    case 'raw':    return 'Total: '+grandTotal.toLocaleString();
+    case 'dollar': return 'Total: $'+grandTotal.toLocaleString();
+    case 'k':      return 'Total: $'+(grandTotal/1000).toFixed(1)+'k';
+    case 'M':      return 'Total: $'+(grandTotal/1e6).toFixed(2)+'M';
+    case 'pct':    return 'Total: 100%';
+    default:       return 'Total: '+grandTotal.toLocaleString();
+  }
+}
+
+// ── Analysis ──────────────────────────────────────────────
+function buildDataSummary(){
+  const colTotals=state.columns.map(c=>c.values.reduce((a,b)=>a+b,0));
+  const grandTotal=colTotals.reduce((a,b)=>a+b,0);
+  let lines=[`Mekko chart. Grand total: $${grandTotal.toLocaleString()}`,'','Columns:'];
+  state.columns.forEach((col,ci)=>{
+    lines.push(`  ${col.name}: $${colTotals[ci].toLocaleString()} (${Math.round(colTotals[ci]/grandTotal*100)}% of total)`);
+    state.rows.forEach((row,ri)=>{
+      const val=col.values[ri]||0;
+      lines.push(`    ${row}: $${val.toLocaleString()} (${colTotals[ci]>0?Math.round(val/colTotals[ci]*100):0}% of col, ${Math.round(val/grandTotal*100)}% of total)`);
     });
   });
-  lines.push('');
-  lines.push('Row totals across all columns:');
-  state.rows.forEach((row, ri) => {
-    const rowTotal = state.columns.reduce((s,c)=>s+(c.values[ri]||0),0);
-    const pct = Math.round(rowTotal/grandTotal*100);
-    lines.push(`  ${row}: $${rowTotal.toLocaleString()} (${pct}% of total)`);
+  lines.push('','Row totals:');
+  state.rows.forEach((row,ri)=>{
+    const rt=state.columns.reduce((s,c)=>s+(c.values[ri]||0),0);
+    lines.push(`  ${row}: $${rt.toLocaleString()} (${Math.round(rt/grandTotal*100)}% of total)`);
   });
   return lines.join('\n');
 }
 
-function closeAnalysis() {
-  document.getElementById('analysis-panel').classList.remove('visible');
-}
+function closeAnalysis(){document.getElementById('analysis-panel').classList.remove('visible');}
 
-async function runAnalysis() {
-  const btn = document.getElementById('analyze-btn');
-  const panel = document.getElementById('analysis-panel');
-  const body = document.getElementById('analysis-body');
-
-  // Switch to chart tab so the panel is visible
+async function runAnalysis(){
+  const btn=document.getElementById('analyze-btn'),panel=document.getElementById('analysis-panel'),body=document.getElementById('analysis-body');
   switchTab('chart');
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spark">✦</span> Analyzing…';
+  btn.disabled=true; btn.innerHTML='<span class="spark">✦</span> Analyzing…';
   panel.classList.add('visible');
-  body.innerHTML = '<div class="loading-dots"><span></span><span></span><span></span></div>';
-
-  const dataSummary = buildDataSummary();
-
-  const systemPrompt = `You are a sharp, confident junior strategy consultant. You analyze data charts and deliver crisp, insight-driven takeaways — like you're prepping a slide for a partner. Be direct, specific, and use the actual numbers. Avoid filler phrases like "it's worth noting" or "interestingly". No hedging.
-
-You will receive data from a Mekko (Marimekko) chart and respond with exactly 4–5 takeaways in JSON format.
-
-Respond ONLY with a JSON array, no markdown, no explanation. Each item has:
-- "label": short category tag (e.g. "Key finding", "Growth signal", "Risk", "Opportunity", "Watch out")
-- "type": one of "highlight", "positive", "warning", "neutral"  
-- "text": 1–2 sentences. Lead with the insight, back it with the number. Bold the most important phrase using <strong> tags.`;
-
-  const userPrompt = `Analyze this chart data and give me 4–5 consultant-style takeaways:\n\n${dataSummary}`;
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }]
+  body.innerHTML='<div class="loading-dots"><span></span><span></span><span></span></div>';
+  try{
+    const response=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:`You are a sharp junior strategy consultant. Analyze Mekko chart data and return ONLY a JSON array of 4-5 takeaways. Each item: {"label":"short tag","type":"highlight|positive|warning|neutral","text":"1-2 sentences with the insight and specific numbers. Bold key phrases with <strong> tags."}. No markdown, no explanation, just the JSON array.`,
+        messages:[{role:'user',content:'Analyze:\n\n'+buildDataSummary()}]
       })
     });
-
-    const data = await response.json();
-    const raw = data.content.map(b => b.text||'').join('').trim();
-
-    // Parse JSON — strip any accidental fences
-    const clean = raw.replace(/^```json\s*/,'').replace(/```$/,'').trim();
-    const takeaways = JSON.parse(clean);
-
-    body.innerHTML = '<div class="takeaways">' +
-      takeaways.map(t => `
-        <div class="takeaway ${t.type||'neutral'}">
-          <div class="takeaway-label">${esc(t.label)}</div>
-          <div class="takeaway-text">${t.text}</div>
-        </div>`).join('') +
-      '</div>';
-
-  } catch(err) {
-    body.innerHTML = `<p style="font-size:13px;color:var(--text2);">Could not complete analysis. Make sure the app is running with API access. (${err.message})</p>`;
+    const data=await response.json();
+    const raw=data.content.map(b=>b.text||'').join('').trim().replace(/^```json\s*/,'').replace(/```$/,'').trim();
+    const takeaways=JSON.parse(raw);
+    body.innerHTML='<div class="takeaways">'+takeaways.map(t=>`<div class="takeaway ${t.type||'neutral'}"><div class="takeaway-label">${esc(t.label)}</div><div class="takeaway-text">${t.text}</div></div>`).join('')+'</div>';
+  } catch(err){
+    body.innerHTML=`<p style="font-size:13px;color:var(--text2);">Analysis unavailable — API access required. (${err.message})</p>`;
   }
-
-  btn.disabled = false;
-  btn.innerHTML = '<span class="spark">✦</span> Analyze';
+  btn.disabled=false; btn.innerHTML='<span class="spark">✦</span> Analyze';
 }
 
-// ── Drag & drop import ────────────────────────────────────
-const dz = document.getElementById('drop-zone');
-dz.addEventListener('dragover', e=>{e.preventDefault();dz.classList.add('drag-over');});
-dz.addEventListener('dragleave', ()=>dz.classList.remove('drag-over'));
-dz.addEventListener('drop', e=>{
-  e.preventDefault(); dz.classList.remove('drag-over');
-  const file=e.dataTransfer.files[0]; if(file) processFile(file);
-});
-
-function handleFileInput(input){if(input.files[0]) processFile(input.files[0]);}
+// ── Import ────────────────────────────────────────────────
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)processFile(f);});
+function handleFileInput(input){if(input.files[0])processFile(input.files[0]);}
 
 function processFile(file){
   const reader=new FileReader();
@@ -392,59 +423,53 @@ function processFile(file){
       if(colNames.length===0) throw new Error('No column headers found');
       const newRows=[],newCols=colNames.map(n=>({name:n,values:[]}));
       for(let i=1;i<rows.length;i++){
-        const segName=String(rows[i][0]).trim(); if(!segName) continue;
-        newRows.push(segName);
+        const seg=String(rows[i][0]).trim();if(!seg)continue;
+        newRows.push(seg);
         colNames.forEach((_,ci)=>{const v=parseFloat(rows[i][ci+1]);newCols[ci].values.push(isNaN(v)?0:v);});
       }
       if(newRows.length===0) throw new Error('No segment rows found');
-      state.rows=newRows; state.columns=newCols; state.colors={};
+      state.rows=newRows;state.columns=newCols;state.colors={};
       dz.classList.add('has-file');
       document.getElementById('drop-zone-title').textContent='✓ '+file.name+' loaded';
       showToast('Loaded '+newRows.length+' segments × '+colNames.length+' columns');
       document.getElementById('import-draw-btn').style.display='inline-flex';
-    } catch(err){ showToast('Error reading file: '+err.message); }
+    } catch(err){showToast('Error: '+err.message);}
   };
   reader.readAsArrayBuffer(file);
 }
 
 // ── Color picker ──────────────────────────────────────────
 function normalizeHex(c){
-  if(!c) return '#000000';
-  if(c.startsWith('rgb')){const m=c.match(/\d+/g);return '#'+m.slice(0,3).map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');}
+  if(!c)return'#000000';
+  if(c.startsWith('rgb')){const m=c.match(/\d+/g);return'#'+m.slice(0,3).map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');}
   return c.toLowerCase();
 }
-
-function openColorPicker(rowName, anchorEl){
+function openColorPicker(rowName,anchorEl){
   const popover=document.getElementById('color-popover');
   document.getElementById('popover-title').textContent='Color: '+rowName;
-  const ri=state.rows.indexOf(rowName), current=getColor(rowName,ri);
-  document.getElementById('color-swatches').innerHTML=SWATCH_LIST.map(c=>
-    `<div class="swatch${normalizeHex(c)===normalizeHex(current)?' selected':''}" style="background:${c}" data-color-trigger="1" onclick="pickColor('${rowName}','${c}')"></div>`
-  ).join('');
+  const ri=state.rows.indexOf(rowName),current=getColor(rowName,ri);
+  document.getElementById('color-swatches').innerHTML=SWATCH_LIST.map(c=>`<div class="swatch${normalizeHex(c)===normalizeHex(current)?' selected':''}" style="background:${c}" data-color-trigger="1" onclick="pickColor('${rowName}','${c}')"></div>`).join('');
   const ci=document.getElementById('custom-color-input');
-  ci.value=normalizeHex(current); ci.oninput=()=>pickColor(rowName,ci.value,false);
+  ci.value=normalizeHex(current);ci.oninput=()=>pickColor(rowName,ci.value,false);
   popover.style.display='block';
   const rect=anchorEl.getBoundingClientRect();
   let left=rect.left,top=rect.bottom+8;
-  if(left+232>window.innerWidth-8) left=window.innerWidth-240;
-  if(top+220>window.innerHeight-8) top=rect.top-228;
-  popover.style.left=Math.max(8,left)+'px'; popover.style.top=Math.max(8,top)+'px';
+  if(left+232>window.innerWidth-8)left=window.innerWidth-240;
+  if(top+220>window.innerHeight-8)top=rect.top-228;
+  popover.style.left=Math.max(8,left)+'px';popover.style.top=Math.max(8,top)+'px';
 }
-
 function pickColor(rowName,color,close=true){
   state.colors[rowName]=color;
   document.getElementById('custom-color-input').value=normalizeHex(color);
   document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('selected',normalizeHex(s.style.background)===normalizeHex(color)));
   drawChart();
-  if(document.getElementById('panel-data').classList.contains('active')) renderRowsTable();
-  if(close) closeColorPicker();
+  if(document.getElementById('panel-data').classList.contains('active'))renderRowsTable();
+  if(close)closeColorPicker();
 }
-
 function closeColorPicker(){document.getElementById('color-popover').style.display='none';}
-
 document.addEventListener('click',e=>{
   const p=document.getElementById('color-popover');
-  if(p.style.display==='block'&&!p.contains(e.target)&&!e.target.closest('[data-color-trigger]')) closeColorPicker();
+  if(p.style.display==='block'&&!p.contains(e.target)&&!e.target.closest('[data-color-trigger]'))closeColorPicker();
 });
 
 // ── Tabs ──────────────────────────────────────────────────
@@ -452,7 +477,7 @@ function switchTab(id){
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['chart','data','import'][i]===id));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
-  if(id==='chart') drawChart();
+  if(id==='chart')drawChart();
   if(id==='data'){renderRowsTable();renderEditor();}
 }
 
@@ -465,15 +490,12 @@ function renderRowsTable(){
       <td><button class="btn btn-icon" onclick="removeRow(${ri})" title="Delete">🗑</button></td>
     </tr>`).join('');
 }
-
 function renameRow(ri,n){const old=state.rows[ri];state.rows[ri]=n;if(state.colors[old]){state.colors[n]=state.colors[old];delete state.colors[old];}}
-
 function removeRow(ri){
-  if(state.rows.length<=1) return alert('Must have at least one row.');
+  if(state.rows.length<=1)return alert('Must have at least one row.');
   const name=state.rows[ri];state.rows.splice(ri,1);state.columns.forEach(c=>c.values.splice(ri,1));delete state.colors[name];
   renderRowsTable();renderEditor();
 }
-
 function addRow(){
   const inp=document.getElementById('new-row-name');
   const name=inp.value.trim()||('Row '+(state.rows.length+1));
@@ -496,22 +518,25 @@ function renderEditor(){
     grid.appendChild(block);
   });
 }
-
 function addColumn(){state.columns.push({name:'New col',values:state.rows.map(()=>0)});renderEditor();}
-
 function removeColumn(ci){
-  if(state.columns.length<=1) return alert('Must have at least one column.');
+  if(state.columns.length<=1)return alert('Must have at least one column.');
   state.columns.splice(ci,1);renderEditor();
 }
 
 // ── Chart ─────────────────────────────────────────────────
 function drawChart(){
   const svg=document.getElementById('mekko-svg'),wrap=document.getElementById('chart-wrap');
-  const W=wrap.clientWidth||800,H=400;
-  const PAD={top:24,right:8,bottom:40,left:48};
+  const W=wrap.clientWidth||800,H=380;
+  const PAD={top:16,right:8,bottom:40,left:48};
   const cW=W-PAD.left-PAD.right,cH=H-PAD.top-PAD.bottom;
   const colTotals=state.columns.map(c=>c.values.reduce((a,b)=>a+b,0));
   const grandTotal=colTotals.reduce((a,b)=>a+b,0);
+  const units=getUnits();
+
+  // Update total badge
+  document.getElementById('chart-total').textContent = grandTotal>0 ? fmtTotal(grandTotal,units) : '';
+
   if(grandTotal===0){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#aaa" font-family="DM Sans,sans-serif" font-size="14">No data to display</text>`;return;}
 
   let rects='',labels='',axes='',xCursor=0;
@@ -532,9 +557,8 @@ function drawChart(){
       if(rh>24&&rw>40){
         const lx=xPx+rectW/2,ly=yPx+rectH/2,fs=rw<70?10:11;
         const sr=row.length>12?row.slice(0,11)+'…':row;
-        const vl=val>=1000000?'$'+(val/1000000).toFixed(1)+'M':val>=1000?'$'+Math.round(val/1000)+'k':'$'+val;
         labels+=`<text x="${lx}" y="${ly-6}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="DM Sans,sans-serif" style="pointer-events:none;">${esc(sr)}</text>`;
-        labels+=`<text x="${lx}" y="${ly+9}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="DM Mono,monospace" style="pointer-events:none;">${vl}</text>`;
+        labels+=`<text x="${lx}" y="${ly+9}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="DM Mono,monospace" style="pointer-events:none;">${fmtLabel(val,rw,units)}</text>`;
       }
       yCursor+=rectH;
     });
@@ -552,7 +576,7 @@ function drawChart(){
     const mid=c.x+c.w/2;
     axes+=`<text x="${mid}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="DM Sans,sans-serif" font-weight="500">${esc(c.name)}</text>`;
     axes+=`<text x="${mid}" y="${PAD.top+cH+30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="DM Mono,monospace">${c.pct}%</text>`;
-    if(c.x>PAD.left) axes+=`<line x1="${c.x}" y1="${PAD.top}" x2="${c.x}" y2="${PAD.top+cH}" stroke="#e8e6de" stroke-width="0.5"/>`;
+    if(c.x>PAD.left)axes+=`<line x1="${c.x}" y1="${PAD.top}" x2="${c.x}" y2="${PAD.top+cH}" stroke="#e8e6de" stroke-width="0.5"/>`;
   });
 
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
@@ -560,7 +584,7 @@ function drawChart(){
 
   svg.querySelectorAll('rect[data-row]').forEach(r=>{
     r.addEventListener('mouseenter',e=>{
-      document.getElementById('tooltip').innerHTML=`<strong>${r.dataset.row}</strong><span style="color:var(--text);font-weight:500;">${fmt(parseInt(r.dataset.val))}</span><br><span class="tip-pct">${r.dataset.pctcol}% of ${r.dataset.col} · ${r.dataset.pcttotal}% of total</span><br><span class="tip-pct" style="color:var(--text3);">Click to change color</span>`;
+      document.getElementById('tooltip').innerHTML=`<strong>${r.dataset.row}</strong><span style="color:var(--text);font-weight:500;">${fmtVal(parseInt(r.dataset.val))}</span><br><span class="tip-pct">${r.dataset.pctcol}% of ${r.dataset.col} · ${r.dataset.pcttotal}% of total</span><br><span class="tip-pct" style="color:var(--text3);">Click to change color</span>`;
       document.getElementById('tooltip').style.display='block';
       r.style.opacity='0.82';moveTip(e);
     });
@@ -578,8 +602,8 @@ function moveTip(e){
   const tip=document.getElementById('tooltip'),wrap=document.getElementById('chart-wrap');
   const rect=wrap.getBoundingClientRect();
   let x=e.clientX-rect.left+14,y=e.clientY-rect.top+14;
-  if(x+175>wrap.clientWidth) x-=190;
-  if(y+110>wrap.clientHeight) y-=120;
+  if(x+175>wrap.clientWidth)x-=190;
+  if(y+110>wrap.clientHeight)y-=120;
   tip.style.left=x+'px';tip.style.top=y+'px';
 }
 
