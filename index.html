@@ -600,11 +600,52 @@ function drawChart(){
       const rx=xPx+gap,ry=yPx+gap,rw=Math.max(rectW-gap*2,0),rh=Math.max(rectH-gap*2,0);
       const pctCol=Math.round(rowFrac*100),pctTotal=Math.round(val/grandTotal*100);
       rects+=`<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${color}" rx="3" data-row="${esc(row)}" data-col="${esc(col.name)}" data-val="${val}" data-ri="${ri}" data-pctcol="${pctCol}" data-pcttotal="${pctTotal}" style="cursor:pointer;transition:opacity 0.1s;"/>`;
-      if(rh>24&&rw>40){
-        const lx=xPx+rectW/2,ly=yPx+rectH/2,fs=rw<70?10:11;
-        const sr=row.length>12?row.slice(0,11)+'…':row;
-        labels+=`<text x="${lx}" y="${ly-6}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="sans-serif" style="pointer-events:none;">${esc(sr)}</text>`;
-        labels+=`<text x="${lx}" y="${ly+9}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="monospace" style="pointer-events:none;">${fmtLabel(val,rw,units)}</text>`;
+      // Adaptive label: try to fit name+value, then just value, then nothing
+      {
+        const lx=xPx+rectW/2, ly=yPx+rectH/2;
+        const valStr=fmtLabel(val,rw,units);
+        // Estimate character width at a given font size (sans-serif ≈ 0.55× size, mono ≈ 0.60× size)
+        function fits(text,fs,availW){return text.length*fs*0.58<availW-6;}
+        // Truncate row name to fit available width at a given font size
+        function truncate(text,fs,availW){
+          let s=text;
+          while(s.length>1&&!fits(s,fs,availW))s=s.slice(0,-1);
+          return s.length<text.length?s.slice(0,-1)+'…':s;
+        }
+        // We need at least ~18px height for one line, ~34px for two lines
+        const canTwoLine=rh>34&&rw>28;
+        const canOneLine=rh>18&&rw>24;
+        if(canTwoLine){
+          // Try font sizes from 11 down to 8; pick largest where both lines fit
+          let chosen=null;
+          for(const fs of [11,10,9,8]){
+            const nameStr=truncate(row,fs,rw);
+            if(fits(valStr,fs,rw)){chosen={fs,nameStr};break;}
+          }
+          if(chosen){
+            const {fs,nameStr}=chosen;
+            const lineGap=fs+3;
+            labels+=`<text x="${lx}" y="${ly-lineGap/2}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="sans-serif" style="pointer-events:none;">${esc(nameStr)}</text>`;
+            labels+=`<text x="${lx}" y="${ly+lineGap/2+fs-1}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+          } else if(canOneLine){
+            // Fall back: just the value on one line
+            for(const fs of [11,10,9,8]){
+              if(fits(valStr,fs,rw)){
+                labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.85)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+                break;
+              }
+            }
+          }
+        } else if(canOneLine){
+          // Single line: value only, autosize
+          for(const fs of [11,10,9,8]){
+            if(fits(valStr,fs,rw)){
+              labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.85)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+              break;
+            }
+          }
+        }
+        // else: segment too small — show nothing (tooltip still works on hover)
       }
       yCursor+=rectH;
     });
