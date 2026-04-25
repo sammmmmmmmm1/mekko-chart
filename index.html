@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Mekko Chart Builder</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -12,6 +13,7 @@
     --border: #dddbd3; --border2: #c8c6bc;
     --text: #1a1917; --text2: #6b6860; --text3: #a09e98;
     --accent: #1a1917; --radius: 8px; --radius-lg: 12px;
+    --green: #2D6A4F; --green-bg: #e8f4f0;
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1.5rem; }
   .app { max-width: 960px; margin: 0 auto; }
@@ -23,20 +25,37 @@
   .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   .panel { display: none; }
   .panel.active { display: block; }
+
+  /* Drop zone */
+  .drop-zone { border: 2px dashed var(--border2); border-radius: var(--radius-lg); padding: 2rem 1.5rem; text-align: center; background: var(--surface); cursor: pointer; transition: all 0.15s; margin-bottom: 1.25rem; position: relative; }
+  .drop-zone:hover, .drop-zone.drag-over { border-color: var(--green); background: var(--green-bg); }
+  .drop-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .drop-zone-icon { font-size: 28px; margin-bottom: 8px; }
+  .drop-zone-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .drop-zone-sub { font-size: 12px; color: var(--text3); }
+  .drop-zone.has-file { border-color: var(--green); background: var(--green-bg); }
+  .drop-zone.has-file .drop-zone-title { color: var(--green); }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 10px 20px; border-radius: var(--radius); font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s; pointer-events: none; z-index: 200; }
+  .toast.show { opacity: 1; }
+
+  /* Chart */
   .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
   .chart-hint { font-size: 12px; color: var(--text3); margin-bottom: 0.75rem; }
   .chart-wrap { position: relative; width: 100%; height: 400px; margin-bottom: 1rem; }
   svg.mekko { width: 100%; height: 100%; overflow: visible; }
   .tooltip { position: absolute; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; pointer-events: none; display: none; z-index: 10; line-height: 1.7; min-width: 160px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-  .tooltip strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; color: var(--text); }
-  .tooltip .tip-val { color: var(--text); font-weight: 500; }
-  .tooltip .tip-pct { color: var(--text2); font-size: 11px; }
+  .tooltip strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+  .tip-pct { color: var(--text2); font-size: 11px; }
   .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0.5rem; padding-top: 1rem; border-top: 1px solid var(--border); }
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); cursor: pointer; padding: 3px 6px; border-radius: 5px; transition: background 0.1s; }
   .legend-item:hover { background: var(--surface2); }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* Data editor */
   .data-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+  .section-header { margin-bottom: 0.75rem; }
   .section-header h3 { font-size: 12px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; }
   .rows-table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; }
   .rows-table td { padding: 5px 6px; vertical-align: middle; }
@@ -56,10 +75,14 @@
   .btn:hover { background: var(--surface2); }
   .btn-dark { background: var(--accent); color: #fff; border-color: var(--accent); }
   .btn-dark:hover { opacity: 0.85; background: var(--accent); }
+  .btn-green { background: var(--green); color: #fff; border-color: var(--green); }
+  .btn-green:hover { opacity: 0.85; background: var(--green); }
   .btn-icon { width: 28px; height: 28px; padding: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--text3); border-color: transparent; background: transparent; }
   .btn-icon:hover { color: var(--text); background: var(--border); }
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
+
+  /* Color picker */
   .color-popover { position: fixed; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 14px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: none; width: 228px; }
   .color-popover h4 { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .color-swatches { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 10px; }
@@ -80,8 +103,10 @@
   <div class="tabs">
     <button class="tab active" onclick="switchTab('chart')">Chart</button>
     <button class="tab" onclick="switchTab('data')">Edit data</button>
+    <button class="tab" onclick="switchTab('import')">Import</button>
   </div>
 
+  <!-- CHART TAB -->
   <div id="panel-chart" class="panel active">
     <div class="chart-card">
       <p class="chart-hint">Click any segment or legend item to change its color.</p>
@@ -93,6 +118,7 @@
     </div>
   </div>
 
+  <!-- DATA TAB -->
   <div id="panel-data" class="panel">
     <div class="data-panel">
       <div class="section-header"><h3>Row segments</h3></div>
@@ -111,8 +137,56 @@
       </div>
     </div>
   </div>
+
+  <!-- IMPORT TAB -->
+  <div id="panel-import" class="panel">
+    <div class="data-panel">
+      <div class="section-header" style="margin-bottom:1rem;"><h3>Import from Excel</h3></div>
+
+      <div class="drop-zone" id="drop-zone">
+        <input type="file" id="file-input" accept=".xlsx,.xls,.csv" onchange="handleFileInput(this)" />
+        <div class="drop-zone-icon">📊</div>
+        <div class="drop-zone-title" id="drop-zone-title">Drop your Excel file here</div>
+        <div class="drop-zone-sub">or click to browse · .xlsx, .xls, .csv</div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:1.25rem;">
+        <p style="font-size:13px;font-weight:600;margin-bottom:8px;">Expected format</p>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Your file should look like this — first column is segment names, first row is column headers:</p>
+        <table style="border-collapse:collapse;font-size:12px;font-family:'DM Mono',monospace;width:100%;">
+          <tr>
+            <td style="padding:5px 10px;background:var(--accent);color:#fff;border-radius:4px 0 0 0;font-weight:600;"></td>
+            <td style="padding:5px 10px;background:var(--accent);color:#fff;font-weight:600;text-align:right;">Q1</td>
+            <td style="padding:5px 10px;background:var(--accent);color:#fff;font-weight:600;text-align:right;">Q2</td>
+            <td style="padding:5px 10px;background:var(--accent);color:#fff;border-radius:0 4px 0 0;font-weight:600;text-align:right;">Q3</td>
+          </tr>
+          <tr style="background:var(--surface);">
+            <td style="padding:5px 10px;font-weight:600;">Vendor A</td>
+            <td style="padding:5px 10px;text-align:right;">141,658</td>
+            <td style="padding:5px 10px;text-align:right;">105,358</td>
+            <td style="padding:5px 10px;text-align:right;">177,072</td>
+          </tr>
+          <tr style="background:var(--surface2);">
+            <td style="padding:5px 10px;font-weight:600;">Vendor B</td>
+            <td style="padding:5px 10px;text-align:right;">82,634</td>
+            <td style="padding:5px 10px;text-align:right;">87,798</td>
+            <td style="padding:5px 10px;text-align:right;">47,957</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="toolbar">
+        <a href="mekko_template.xlsx" download style="text-decoration:none;">
+          <button class="btn btn-green">⬇ Download template</button>
+        </a>
+        <div style="flex:1"></div>
+        <button class="btn btn-dark" onclick="switchTab('chart')">Draw chart →</button>
+      </div>
+    </div>
+  </div>
 </div>
 
+<!-- Color picker -->
 <div class="color-popover" id="color-popover">
   <h4 id="popover-title">Change color</h4>
   <div class="color-swatches" id="color-swatches"></div>
@@ -124,9 +198,10 @@
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 const PALETTE = ['#2D6A4F','#2166AC','#D4522A','#6B4EAE','#B07D1F','#C2436B','#3A7D44','#C0392B','#1A7070','#4472B8','#8E5EA2','#D4870A','#2E86AB','#A3320B','#4D8B31'];
-const SWATCHES = ['#2D6A4F','#1D9E75','#5DCAA5','#9FE1CB','#2166AC','#378ADD','#85B7EB','#B5D4F4','#D4522A','#E8845A','#F5C4B3','#6B4EAE','#9B7FD4','#CEC BF6','#B07D1F','#D4AA50','#FAC775','#C2436B','#ED93B1','#3A7D44','#639922','#C0392B','#E24B4A','#555555','#888888','#bbbbbb','#1a1917','#0a4f6e','#6b2d2d','#2d4a1f'];
 
 let state = {
   rows: ['Vendor A','Vendor B','Vendor C','Other'],
@@ -140,62 +215,123 @@ let state = {
 };
 
 function getColor(row, i) { return state.colors[row] || PALETTE[i % PALETTE.length]; }
-
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ── Drag & drop ───────────────────────────────────────────
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) processFile(file);
+});
+
+function handleFileInput(input) {
+  if (input.files[0]) processFile(input.files[0]);
+}
+
+function processFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:0});
+
+      // Filter out empty rows
+      const rows = raw.filter(r => r.some(c => c !== '' && c !== 0 && c !== null && c !== undefined));
+      if (rows.length < 2) throw new Error('Not enough data rows');
+
+      // Row 0 = headers: first cell ignored, rest = column names
+      const colNames = rows[0].slice(1).map(c => String(c).trim()).filter(c => c !== '');
+      if (colNames.length === 0) throw new Error('No column headers found');
+
+      // Remaining rows: first cell = segment name, rest = values
+      const newRows = [], newCols = colNames.map(n => ({name:n, values:[]}));
+      for (let i = 1; i < rows.length; i++) {
+        const segName = String(rows[i][0]).trim();
+        if (!segName) continue;
+        newRows.push(segName);
+        colNames.forEach((_, ci) => {
+          const v = parseFloat(rows[i][ci+1]);
+          newCols[ci].values.push(isNaN(v) ? 0 : v);
+        });
+      }
+
+      if (newRows.length === 0) throw new Error('No segment rows found');
+
+      state.rows = newRows;
+      state.columns = newCols;
+      state.colors = {};
+
+      dz.classList.add('has-file');
+      document.getElementById('drop-zone-title').textContent = '✓ ' + file.name + ' loaded';
+      showToast(`Loaded ${newRows.length} segments × ${colNames.length} columns`);
+      switchTab('chart');
+    } catch(err) {
+      showToast('Error reading file: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 // ── Color picker ──────────────────────────────────────────
+const SWATCH_LIST = ['#2D6A4F','#1D9E75','#5DCAA5','#9FE1CB','#2166AC','#378ADD','#85B7EB','#B5D4F4','#D4522A','#E8845A','#F5C4B3','#6B4EAE','#9B7FD4','#B07D1F','#D4AA50','#FAC775','#C2436B','#ED93B1','#3A7D44','#639922','#C0392B','#E24B4A','#555555','#888888','#bbbbbb','#1a1917','#0a4f6e','#6b2d2d','#2d4a1f','#4a2d6b'];
+
+function normalizeHex(c) {
+  if (!c) return '#000000';
+  if (c.startsWith('rgb')) { const m=c.match(/\d+/g); return '#'+m.slice(0,3).map(x=>parseInt(x).toString(16).padStart(2,'0')).join(''); }
+  return c.toLowerCase();
+}
+
 function openColorPicker(rowName, anchorEl) {
   const popover = document.getElementById('color-popover');
   document.getElementById('popover-title').textContent = 'Color: ' + rowName;
   const ri = state.rows.indexOf(rowName);
   const current = getColor(rowName, ri);
-
-  const swatchList = ['#2D6A4F','#1D9E75','#5DCAA5','#9FE1CB','#2166AC','#378ADD','#85B7EB','#B5D4F4','#D4522A','#E8845A','#F5C4B3','#6B4EAE','#9B7FD4','#B07D1F','#D4AA50','#FAC775','#C2436B','#ED93B1','#3A7D44','#639922','#C0392B','#E24B4A','#555555','#888888','#bbbbbb','#1a1917','#0a4f6e','#6b2d2d','#2d4a1f','#4a2d6b'];
-  document.getElementById('color-swatches').innerHTML = swatchList.map(c =>
+  document.getElementById('color-swatches').innerHTML = SWATCH_LIST.map(c =>
     `<div class="swatch${normalizeHex(c)===normalizeHex(current)?' selected':''}" style="background:${c}" data-color-trigger="1" onclick="pickColor('${rowName}','${c}')"></div>`
   ).join('');
-
   const ci = document.getElementById('custom-color-input');
   ci.value = normalizeHex(current);
   ci.oninput = () => pickColor(rowName, ci.value, false);
-
   popover.style.display = 'block';
   const rect = anchorEl.getBoundingClientRect();
-  let left = rect.left, top = rect.bottom + 8;
-  if (left + 232 > window.innerWidth - 8) left = window.innerWidth - 240;
-  if (top + 210 > window.innerHeight - 8) top = rect.top - 218;
-  popover.style.left = Math.max(8, left) + 'px';
-  popover.style.top = Math.max(8, top) + 'px';
+  let left=rect.left, top=rect.bottom+8;
+  if (left+232>window.innerWidth-8) left=window.innerWidth-240;
+  if (top+220>window.innerHeight-8) top=rect.top-228;
+  popover.style.left=Math.max(8,left)+'px';
+  popover.style.top=Math.max(8,top)+'px';
 }
 
-function normalizeHex(c) {
-  if (!c) return '#000000';
-  if (c.startsWith('rgb')) {
-    const m = c.match(/\d+/g);
-    return '#' + m.slice(0,3).map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');
-  }
-  return c.toLowerCase();
-}
-
-function pickColor(rowName, color, close = true) {
+function pickColor(rowName, color, close=true) {
   state.colors[rowName] = color;
   document.getElementById('custom-color-input').value = normalizeHex(color);
-  document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('selected', normalizeHex(s.style.background) === normalizeHex(color)));
+  document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('selected', normalizeHex(s.style.background)===normalizeHex(color)));
   drawChart();
   if (document.getElementById('panel-data').classList.contains('active')) renderRowsTable();
   if (close) closeColorPicker();
 }
 
-function closeColorPicker() { document.getElementById('color-popover').style.display = 'none'; }
+function closeColorPicker() { document.getElementById('color-popover').style.display='none'; }
 
 document.addEventListener('click', e => {
   const p = document.getElementById('color-popover');
-  if (p.style.display === 'block' && !p.contains(e.target) && !e.target.closest('[data-color-trigger]')) closeColorPicker();
+  if (p.style.display==='block' && !p.contains(e.target) && !e.target.closest('[data-color-trigger]')) closeColorPicker();
 });
 
-// ── Tab switching ─────────────────────────────────────────
+// ── Tabs ──────────────────────────────────────────────────
 function switchTab(id) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['chart','data'][i]===id));
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['chart','data','import'][i]===id));
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   if (id==='chart') drawChart();
@@ -206,110 +342,84 @@ function switchTab(id) {
 function renderRowsTable() {
   document.getElementById('rows-table').innerHTML = state.rows.map((r,ri) => `
     <tr>
-      <td style="width:24px;">
-        <div style="width:20px;height:20px;border-radius:4px;background:${getColor(r,ri)};border:1px solid var(--border2);cursor:pointer;"
-          data-color-trigger="1" onclick="openColorPicker('${esc(r)}',this)" title="Change color"></div>
-      </td>
+      <td style="width:24px;"><div style="width:20px;height:20px;border-radius:4px;background:${getColor(r,ri)};border:1px solid var(--border2);cursor:pointer;" data-color-trigger="1" onclick="openColorPicker('${esc(r)}',this)"></div></td>
       <td><input type="text" value="${esc(r)}" style="width:170px;" oninput="renameRow(${ri},this.value)" /></td>
-      <td>
-        <button class="btn btn-icon" onclick="removeRow(${ri})" title="Delete row">🗑</button>
-      </td>
+      <td><button class="btn btn-icon" onclick="removeRow(${ri})" title="Delete">🗑</button></td>
     </tr>`).join('');
 }
 
-function renameRow(ri, newName) {
-  const old = state.rows[ri];
-  state.rows[ri] = newName;
-  if (state.colors[old]) { state.colors[newName] = state.colors[old]; delete state.colors[old]; }
+function renameRow(ri, n) {
+  const old=state.rows[ri]; state.rows[ri]=n;
+  if (state.colors[old]) { state.colors[n]=state.colors[old]; delete state.colors[old]; }
 }
 
 function removeRow(ri) {
-  if (state.rows.length <= 1) return alert('Must have at least one row.');
-  const name = state.rows[ri];
-  state.rows.splice(ri, 1);
-  state.columns.forEach(c => c.values.splice(ri, 1));
+  if (state.rows.length<=1) return alert('Must have at least one row.');
+  const name=state.rows[ri]; state.rows.splice(ri,1);
+  state.columns.forEach(c=>c.values.splice(ri,1));
   delete state.colors[name];
   renderRowsTable(); renderEditor();
 }
 
 function addRow() {
-  const inp = document.getElementById('new-row-name');
-  const name = inp.value.trim() || ('Row ' + (state.rows.length+1));
-  state.rows.push(name);
-  state.columns.forEach(c => c.values.push(0));
-  inp.value = '';
-  renderRowsTable(); renderEditor();
+  const inp=document.getElementById('new-row-name');
+  const name=inp.value.trim()||('Row '+(state.rows.length+1));
+  state.rows.push(name); state.columns.forEach(c=>c.values.push(0));
+  inp.value=''; renderRowsTable(); renderEditor();
 }
 
 // ── Columns editor ────────────────────────────────────────
 function renderEditor() {
-  const grid = document.getElementById('data-grid');
-  grid.innerHTML = '';
-  state.columns.forEach((col, ci) => {
-    const block = document.createElement('div');
-    block.className = 'col-block';
-    const rows = state.rows.map((r,ri) => `
+  const grid=document.getElementById('data-grid'); grid.innerHTML='';
+  state.columns.forEach((col,ci)=>{
+    const block=document.createElement('div'); block.className='col-block';
+    const rows=state.rows.map((r,ri)=>`
       <div class="row-line">
         <div class="row-line-color" style="background:${getColor(r,ri)}"></div>
         <div class="row-label" title="${esc(r)}">${esc(r)}</div>
         <input type="number" min="0" value="${col.values[ri]||0}" oninput="state.columns[${ci}].values[${ri}]=parseFloat(this.value)||0" />
       </div>`).join('');
-    block.innerHTML = `
-      <div class="col-header">
-        <input type="text" value="${esc(col.name)}" placeholder="Column name" oninput="state.columns[${ci}].name=this.value" />
-        <button class="btn btn-icon" onclick="removeColumn(${ci})" title="Remove column">🗑</button>
-      </div>${rows}`;
+    block.innerHTML=`<div class="col-header"><input type="text" value="${esc(col.name)}" placeholder="Column name" oninput="state.columns[${ci}].name=this.value" /><button class="btn btn-icon" onclick="removeColumn(${ci})" title="Remove">🗑</button></div>${rows}`;
     grid.appendChild(block);
   });
 }
 
-function addColumn() {
-  state.columns.push({name:'New col', values:state.rows.map(()=>0)});
-  renderEditor();
-}
+function addColumn() { state.columns.push({name:'New col',values:state.rows.map(()=>0)}); renderEditor(); }
 
 function removeColumn(ci) {
-  if (state.columns.length <= 1) return alert('Must have at least one column.');
-  state.columns.splice(ci, 1);
-  renderEditor();
+  if (state.columns.length<=1) return alert('Must have at least one column.');
+  state.columns.splice(ci,1); renderEditor();
 }
 
 // ── Chart ─────────────────────────────────────────────────
 function fmt(n) { return '$'+n.toLocaleString(); }
 
 function drawChart() {
-  const svg = document.getElementById('mekko-svg');
-  const wrap = document.getElementById('chart-wrap');
-  const W = wrap.clientWidth || 800, H = 400;
-  const PAD = {top:24, right:8, bottom:40, left:48};
-  const cW = W-PAD.left-PAD.right, cH = H-PAD.top-PAD.bottom;
-
-  const colTotals = state.columns.map(c => c.values.reduce((a,b)=>a+b,0));
-  const grandTotal = colTotals.reduce((a,b)=>a+b,0);
+  const svg=document.getElementById('mekko-svg'), wrap=document.getElementById('chart-wrap');
+  const W=wrap.clientWidth||800, H=400;
+  const PAD={top:24,right:8,bottom:40,left:48};
+  const cW=W-PAD.left-PAD.right, cH=H-PAD.top-PAD.bottom;
+  const colTotals=state.columns.map(c=>c.values.reduce((a,b)=>a+b,0));
+  const grandTotal=colTotals.reduce((a,b)=>a+b,0);
   if (grandTotal===0) { svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#aaa" font-family="DM Sans,sans-serif" font-size="14">No data to display</text>`; return; }
 
-  let rects='', labels='', axes='';
-  let xCursor=0;
+  let rects='',labels='',axes='',xCursor=0;
   const colMeta=[];
 
-  state.columns.forEach((col,ci) => {
+  state.columns.forEach((col,ci)=>{
     const colTotal=colTotals[ci], colFrac=colTotal/grandTotal;
     const rectW=colFrac*cW, xPx=PAD.left+xCursor;
-    colMeta.push({x:xPx, w:rectW, name:col.name, pct:Math.round(colFrac*100)});
+    colMeta.push({x:xPx,w:rectW,name:col.name,pct:Math.round(colFrac*100)});
     let yCursor=0;
-    state.rows.forEach((row,ri) => {
-      const val=col.values[ri]||0;
-      if (val<=0) return;
-      const rowFrac=colTotal>0?val/colTotal:0;
-      const rectH=rowFrac*cH, yPx=PAD.top+yCursor;
+    state.rows.forEach((row,ri)=>{
+      const val=col.values[ri]||0; if(val<=0) return;
+      const rowFrac=colTotal>0?val/colTotal:0, rectH=rowFrac*cH, yPx=PAD.top+yCursor;
       const color=getColor(row,ri), gap=1.5;
-      const rx=xPx+gap, ry=yPx+gap, rw=Math.max(rectW-gap*2,0), rh=Math.max(rectH-gap*2,0);
+      const rx=xPx+gap,ry=yPx+gap,rw=Math.max(rectW-gap*2,0),rh=Math.max(rectH-gap*2,0);
       const pctCol=Math.round(rowFrac*100), pctTotal=Math.round(val/grandTotal*100);
-      rects+=`<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${color}" rx="3"
-        data-row="${esc(row)}" data-col="${esc(col.name)}" data-val="${val}" data-ri="${ri}"
-        data-pctcol="${pctCol}" data-pcttotal="${pctTotal}" style="cursor:pointer;transition:opacity 0.1s;"/>`;
+      rects+=`<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${color}" rx="3" data-row="${esc(row)}" data-col="${esc(col.name)}" data-val="${val}" data-ri="${ri}" data-pctcol="${pctCol}" data-pcttotal="${pctTotal}" style="cursor:pointer;transition:opacity 0.1s;"/>`;
       if (rh>24&&rw>40) {
-        const lx=xPx+rectW/2, ly=yPx+rectH/2, fs=rw<70?10:11;
+        const lx=xPx+rectW/2,ly=yPx+rectH/2,fs=rw<70?10:11;
         const sr=row.length>12?row.slice(0,11)+'…':row;
         const vl=val>=1000000?'$'+(val/1000000).toFixed(1)+'M':val>=1000?'$'+Math.round(val/1000)+'k':'$'+val;
         labels+=`<text x="${lx}" y="${ly-6}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="DM Sans,sans-serif" style="pointer-events:none;">${esc(sr)}</text>`;
@@ -320,15 +430,14 @@ function drawChart() {
     xCursor+=rectW;
   });
 
-  [0,25,50,75,100].forEach(v => {
-    const y=PAD.top+(1-v/100)*cH;
-    const dash=(v===0||v===100)?'':'stroke-dasharray="4,4"';
+  [0,25,50,75,100].forEach(v=>{
+    const y=PAD.top+(1-v/100)*cH, dash=(v===0||v===100)?'':'stroke-dasharray="4,4"';
     axes+=`<line x1="${PAD.left}" y1="${y}" x2="${PAD.left+cW}" y2="${y}" stroke="#dddbd3" stroke-width="0.5" ${dash}/>`;
     axes+=`<text x="${PAD.left-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#9e9c96" font-family="DM Mono,monospace">${v}%</text>`;
   });
   axes+=`<line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
   axes+=`<line x1="${PAD.left}" y1="${PAD.top+cH}" x2="${PAD.left+cW}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
-  colMeta.forEach(c => {
+  colMeta.forEach(c=>{
     const mid=c.x+c.w/2;
     axes+=`<text x="${mid}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="DM Sans,sans-serif" font-weight="500">${esc(c.name)}</text>`;
     axes+=`<text x="${mid}" y="${PAD.top+cH+30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="DM Mono,monospace">${c.pct}%</text>`;
@@ -338,41 +447,33 @@ function drawChart() {
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
   svg.innerHTML=axes+rects+labels;
 
-  svg.querySelectorAll('rect[data-row]').forEach(r => {
-    r.addEventListener('mouseenter', e => {
-      document.getElementById('tooltip').innerHTML=`<strong>${r.dataset.row}</strong>
-        <span class="tip-val">${fmt(parseInt(r.dataset.val))}</span><br>
-        <span class="tip-pct">${r.dataset.pctcol}% of ${r.dataset.col} · ${r.dataset.pcttotal}% of total</span><br>
-        <span class="tip-pct" style="color:var(--text3);">Click to change color</span>`;
+  svg.querySelectorAll('rect[data-row]').forEach(r=>{
+    r.addEventListener('mouseenter',e=>{
+      document.getElementById('tooltip').innerHTML=`<strong>${r.dataset.row}</strong><span style="color:var(--text);font-weight:500;">${fmt(parseInt(r.dataset.val))}</span><br><span class="tip-pct">${r.dataset.pctcol}% of ${r.dataset.col} · ${r.dataset.pcttotal}% of total</span><br><span class="tip-pct" style="color:var(--text3);">Click to change color</span>`;
       document.getElementById('tooltip').style.display='block';
-      r.style.opacity='0.82';
-      moveTip(e);
+      r.style.opacity='0.82'; moveTip(e);
     });
-    r.addEventListener('mousemove', moveTip);
-    r.addEventListener('mouseleave', () => { document.getElementById('tooltip').style.display='none'; r.style.opacity='1'; });
-    r.addEventListener('click', e => {
-      document.getElementById('tooltip').style.display='none';
-      openColorPicker(r.dataset.row, r);
-    });
+    r.addEventListener('mousemove',moveTip);
+    r.addEventListener('mouseleave',()=>{document.getElementById('tooltip').style.display='none';r.style.opacity='1';});
+    r.addEventListener('click',e=>{document.getElementById('tooltip').style.display='none';openColorPicker(r.dataset.row,r);});
   });
 
-  document.getElementById('legend').innerHTML = state.rows.map((row,ri) =>
-    `<div class="legend-item" data-color-trigger="1" onclick="openColorPicker('${esc(row)}',this)" title="Click to change color">
-      <div class="legend-dot" style="background:${getColor(row,ri)}"></div>${esc(row)}
-    </div>`).join('');
+  document.getElementById('legend').innerHTML=state.rows.map((row,ri)=>
+    `<div class="legend-item" data-color-trigger="1" onclick="openColorPicker('${esc(row)}',this)" title="Click to change color"><div class="legend-dot" style="background:${getColor(row,ri)}"></div>${esc(row)}</div>`
+  ).join('');
 }
 
 function moveTip(e) {
-  const tip=document.getElementById('tooltip'), wrap=document.getElementById('chart-wrap');
+  const tip=document.getElementById('tooltip'),wrap=document.getElementById('chart-wrap');
   const rect=wrap.getBoundingClientRect();
-  let x=e.clientX-rect.left+14, y=e.clientY-rect.top+14;
-  if (x+175>wrap.clientWidth) x-=190;
-  if (y+110>wrap.clientHeight) y-=120;
+  let x=e.clientX-rect.left+14,y=e.clientY-rect.top+14;
+  if(x+175>wrap.clientWidth) x-=190;
+  if(y+110>wrap.clientHeight) y-=120;
   tip.style.left=x+'px'; tip.style.top=y+'px';
 }
 
 drawChart();
-window.addEventListener('resize', () => { if (document.getElementById('panel-chart').classList.contains('active')) drawChart(); });
+window.addEventListener('resize',()=>{if(document.getElementById('panel-chart').classList.contains('active'))drawChart();});
 </script>
 </body>
 </html>
