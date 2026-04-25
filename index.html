@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Mekko Chart Builder</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #dddbd3;
+    --border2: #c8c6bc;
+    --text: #1a1917;
+    --text2: #6b6860;
+    --text3: #a09e98;
+    --accent: #1a1917;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 2rem 1.5rem;
+  }
+
+  .app {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 1rem;
+  }
+
+  header h1 {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+  }
+
+  header span {
+    font-size: 13px;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 1.5rem;
+    background: var(--surface2);
+    border-radius: var(--radius);
+    padding: 3px;
+    width: fit-content;
+    border: 1px solid var(--border);
+  }
+
+  .tab {
+    padding: 6px 18px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text2);
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .tab.active {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+  }
+
+  .chart-wrap {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    margin-bottom: 1rem;
+  }
+
+  svg.mekko {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .tooltip {
+    position: absolute;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 12px;
+    pointer-events: none;
+    display: none;
+    z-index: 10;
+    line-height: 1.7;
+    min-width: 160px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+  }
+
+  .tooltip strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 2px;
+    color: var(--text);
+  }
+
+  .tooltip .tip-val { color: var(--text); font-weight: 500; }
+  .tooltip .tip-pct { color: var(--text2); font-size: 11px; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+
+  .data-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+  }
+
+  .row-mgmt {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+  }
+
+  .row-mgmt label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-right: 4px;
+  }
+
+  .data-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .col-block {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+
+  .col-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .col-header input[type=text] {
+    flex: 1;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  .row-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .row-label {
+    font-size: 12px;
+    color: var(--text2);
+    width: 100px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 0;
+  }
+
+  input[type=text], input[type=number] {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  input[type=text]:focus, input[type=number]:focus {
+    border-color: var(--border2);
+  }
+
+  input[type=number] { width: 100px; font-family: 'DM Mono', monospace; }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border2);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    font-weight: 500;
+    transition: all 0.15s;
+  }
+
+  .btn:hover { background: var(--surface2); }
+
+  .btn-dark {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn-dark:hover { opacity: 0.85; background: var(--accent); }
+
+  .btn-icon {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--text2);
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--text3);
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Mekko chart builder</h1>
+    <span>area = share of grand total</span>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('chart')">Chart</button>
+    <button class="tab" onclick="switchTab('data')">Edit data</button>
+  </div>
+
+  <div id="panel-chart" class="panel active">
+    <div class="chart-card">
+      <div class="chart-wrap" id="chart-wrap">
+        <svg class="mekko" id="mekko-svg"></svg>
+        <div class="tooltip" id="tooltip"></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+  </div>
+
+  <div id="panel-data" class="panel">
+    <div class="data-panel">
+      <div class="row-mgmt">
+        <label>Row segments:</label>
+        <input type="text" id="new-row-name" placeholder="New row name..." style="width:160px;" />
+        <button class="btn" onclick="addRow()">+ Add row</button>
+      </div>
+      <div class="data-grid" id="data-grid"></div>
+      <div class="toolbar">
+        <button class="btn" onclick="addColumn()">+ Add column</button>
+        <div style="flex:1"></div>
+        <button class="btn btn-dark" onclick="switchTab('chart')">Draw chart →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const PALETTE = [
+  '#2D6A4F','#2166AC','#D4522A','#6B4EAE','#B07D1F',
+  '#C2436B','#3A7D44','#C0392B','#1A7070','#4472B8',
+  '#8E5EA2','#D4870A','#2E86AB','#A3320B','#4D8B31'
+];
+
+let state = {
+  rows: ['Vendor A', 'Vendor B', 'Vendor C', 'Other'],
+  columns: [
+    { name: 'Q1', values: [141658, 82634, 44268, 27594] },
+    { name: 'Q2', values: [105358, 87798, 30102, 27594] },
+    { name: 'Q3', values: [177072, 47957, 41317, 28774] },
+    { name: 'Q4', values: [70829, 87798, 35414, 15494] },
+  ]
+};
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['chart','data'][i] === id));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  if (id === 'chart') drawChart();
+  if (id === 'data') renderEditor();
+}
+
+function renderEditor() {
+  const grid = document.getElementById('data-grid');
+  grid.innerHTML = '';
+  state.columns.forEach((col, ci) => {
+    const block = document.createElement('div');
+    block.className = 'col-block';
+    const rows = state.rows.map((r, ri) => `
+      <div class="row-line">
+        <div class="row-label" title="${r}">${r}</div>
+        <input type="number" min="0" value="${col.values[ri] || 0}"
+          oninput="state.columns[${ci}].values[${ri}] = parseFloat(this.value) || 0" />
+      </div>`).join('');
+    block.innerHTML = `
+      <div class="col-header">
+        <input type="text" value="${col.name}" placeholder="Column name"
+          oninput="state.columns[${ci}].name = this.value" />
+        <button class="btn btn-icon" onclick="removeColumn(${ci})" title="Remove">✕</button>
+      </div>
+      ${rows}`;
+    grid.appendChild(block);
+  });
+}
+
+function addColumn() {
+  state.columns.push({ name: 'New col', values: state.rows.map(() => 0) });
+  renderEditor();
+}
+
+function removeColumn(ci) {
+  state.columns.splice(ci, 1);
+  renderEditor();
+}
+
+function addRow() {
+  const inp = document.getElementById('new-row-name');
+  const name = inp.value.trim() || ('Row ' + (state.rows.length + 1));
+  state.rows.push(name);
+  state.columns.forEach(c => c.values.push(0));
+  inp.value = '';
+  renderEditor();
+}
+
+function fmt(n) { return '$' + n.toLocaleString(); }
+
+function drawChart() {
+  const svg = document.getElementById('mekko-svg');
+  const wrap = document.getElementById('chart-wrap');
+  const W = wrap.clientWidth || 800;
+  const H = 400;
+  const PAD = { top: 24, right: 8, bottom: 40, left: 48 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+
+  const colTotals = state.columns.map(c => c.values.reduce((a, b) => a + b, 0));
+  const grandTotal = colTotals.reduce((a, b) => a + b, 0);
+
+  if (grandTotal === 0) {
+    svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#aaa" font-family="DM Sans, sans-serif" font-size="14">No data to display</text>`;
+    return;
+  }
+
+  const colorMap = {};
+  state.rows.forEach((r, i) => colorMap[r] = PALETTE[i % PALETTE.length]);
+
+  let rects = '', labels = '', axes = '';
+
+  let xCursor = 0;
+  const colMeta = [];
+
+  state.columns.forEach((col, ci) => {
+    const colTotal = colTotals[ci];
+    const colFrac = colTotal / grandTotal;
+    const rectW = colFrac * cW;
+    const xPx = PAD.left + xCursor;
+    colMeta.push({ x: xPx, w: rectW, name: col.name, pct: Math.round(colFrac * 100), total: colTotal });
+
+    let yCursor = 0;
+    state.rows.forEach((row, ri) => {
+      const val = col.values[ri] || 0;
+      if (val <= 0) { yCursor += 0; return; }
+      const rowFrac = colTotal > 0 ? val / colTotal : 0;
+      const rectH = rowFrac * cH;
+      const yPx = PAD.top + yCursor;
+      const color = colorMap[row];
+      const gap = 1.5;
+      const rx = xPx + gap, ry = yPx + gap;
+      const rw = Math.max(rectW - gap * 2, 0);
+      const rh = Math.max(rectH - gap * 2, 0);
+      const pctCol = Math.round(rowFrac * 100);
+      const pctTotal = Math.round(val / grandTotal * 100);
+
+      rects += `<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${color}" rx="3"
+        data-row="${row}" data-col="${col.name}" data-val="${val}" data-pctcol="${pctCol}" data-pcttotal="${pctTotal}"
+        style="cursor:pointer;transition:opacity 0.1s;" />`;
+
+      if (rh > 24 && rw > 40) {
+        const lx = xPx + rectW / 2;
+        const ly = yPx + rectH / 2;
+        const fs = rw < 70 ? 10 : 11;
+        const shortRow = row.length > 12 ? row.slice(0, 11) + '…' : row;
+        const valLabel = val >= 1000000 ? '$' + (val/1000000).toFixed(1) + 'M' : val >= 1000 ? '$' + Math.round(val/1000) + 'k' : '$' + val;
+        labels += `<text x="${lx}" y="${ly - 6}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="DM Sans, sans-serif" style="pointer-events:none;">${shortRow}</text>`;
+        labels += `<text x="${lx}" y="${ly + 9}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="DM Mono, monospace" style="pointer-events:none;">${valLabel}</text>`;
+      }
+      yCursor += rectH;
+    });
+    xCursor += rectW;
+  });
+
+  [0, 25, 50, 75, 100].forEach(v => {
+    const y = PAD.top + (1 - v / 100) * cH;
+    const dash = (v === 0 || v === 100) ? '' : 'stroke-dasharray="4,4"';
+    axes += `<line x1="${PAD.left}" y1="${y}" x2="${PAD.left + cW}" y2="${y}" stroke="#dddbd3" stroke-width="0.5" ${dash}/>`;
+    axes += `<text x="${PAD.left - 8}" y="${y + 4}" text-anchor="end" font-size="11" fill="#9e9c96" font-family="DM Mono, monospace">${v}%</text>`;
+  });
+
+  axes += `<line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top + cH}" stroke="#c8c6bc" stroke-width="1"/>`;
+  axes += `<line x1="${PAD.left}" y1="${PAD.top + cH}" x2="${PAD.left + cW}" y2="${PAD.top + cH}" stroke="#c8c6bc" stroke-width="1"/>`;
+
+  colMeta.forEach(c => {
+    const mid = c.x + c.w / 2;
+    axes += `<text x="${mid}" y="${PAD.top + cH + 16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="DM Sans, sans-serif" font-weight="500">${c.name}</text>`;
+    axes += `<text x="${mid}" y="${PAD.top + cH + 30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="DM Mono, monospace">${c.pct}%</text>`;
+    if (c.x > PAD.left) {
+      axes += `<line x1="${c.x}" y1="${PAD.top}" x2="${c.x}" y2="${PAD.top + cH}" stroke="#e8e6de" stroke-width="0.5"/>`;
+    }
+  });
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = axes + rects + labels;
+
+  svg.querySelectorAll('rect[data-row]').forEach(r => {
+    r.addEventListener('mouseenter', e => {
+      const tip = document.getElementById('tooltip');
+      tip.innerHTML = `<strong>${r.dataset.row}</strong>
+        <span class="tip-val">${fmt(parseInt(r.dataset.val))}</span>
+        <span class="tip-pct">${r.dataset.pctcol}% of ${r.dataset.col} · ${r.dataset.pcttotal}% of total</span>`;
+      tip.style.display = 'block';
+      moveTip(e);
+    });
+    r.addEventListener('mousemove', moveTip);
+    r.addEventListener('mouseleave', () => document.getElementById('tooltip').style.display = 'none');
+    r.addEventListener('mouseenter', e => r.style.opacity = '0.85');
+    r.addEventListener('mouseleave', e => r.style.opacity = '1');
+  });
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = state.rows.map(r =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${colorMap[r]}"></div>${r}</div>`
+  ).join('');
+}
+
+function moveTip(e) {
+  const tip = document.getElementById('tooltip');
+  const wrap = document.getElementById('chart-wrap');
+  const rect = wrap.getBoundingClientRect();
+  let x = e.clientX - rect.left + 14;
+  let y = e.clientY - rect.top + 14;
+  if (x + 175 > wrap.clientWidth) x -= 190;
+  if (y + 80 > wrap.clientHeight) y -= 90;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+
+drawChart();
+window.addEventListener('resize', () => {
+  if (document.getElementById('panel-chart').classList.contains('active')) drawChart();
+});
+</script>
+</body>
+</html>
