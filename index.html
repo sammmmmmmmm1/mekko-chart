@@ -28,7 +28,7 @@
   .panel.active { display: block; }
 
   /* Chart card */
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.5rem 1rem; }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.5rem 1rem 2.75rem; }
   .chart-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 10px; flex-wrap: wrap; }
   .chart-total { font-size: 13px; font-weight: 600; color: var(--text2); font-family: 'DM Mono', monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
   .units-wrap { display: flex; align-items: center; gap: 6px; }
@@ -155,6 +155,7 @@
             <option value="dollar" selected>$ (dollars)</option>
             <option value="k">$k (thousands)</option>
             <option value="M">$M (millions)</option>
+            <option value="B">$B (billions)</option>
             <option value="pct">% (percent of total)</option>
           </select>
         </div>
@@ -176,25 +177,29 @@
           data-placeholder="Click to add chart title…"></div>
       </div>
 
-      <!-- Chart SVG -->
-      <div class="chart-wrap" id="chart-wrap">
-        <svg class="mekko" id="mekko-svg"></svg>
-        <div class="tooltip" id="tooltip"></div>
-      </div>
-
-      <!-- Axis titles -->
-      <div class="axis-row">
-        <div class="inline-edit axis-title-el"
-          id="y-axis-title"
-          contenteditable="true"
-          spellcheck="false"
-          data-placeholder="Y axis label…"></div>
-        <div class="inline-edit axis-title-el"
-          id="x-axis-title"
-          contenteditable="true"
-          spellcheck="false"
-          data-placeholder="X axis label…"
-          style="text-align:right;"></div>
+      <!-- Chart SVG wrapped in a relative container that also holds axis titles -->
+      <div style="position:relative;">
+        <!-- Y axis title: vertical, centered on left -->
+        <div style="position:absolute;left:-36px;top:0;bottom:0;width:32px;display:flex;align-items:center;justify-content:center;pointer-events:none;">
+          <div class="inline-edit axis-title-el"
+            id="y-axis-title"
+            contenteditable="true"
+            spellcheck="false"
+            data-placeholder="Y axis"
+            style="transform:rotate(-90deg);white-space:nowrap;pointer-events:auto;text-align:center;"></div>
+        </div>
+        <div class="chart-wrap" id="chart-wrap">
+          <svg class="mekko" id="mekko-svg"></svg>
+          <div class="tooltip" id="tooltip"></div>
+        </div>
+        <!-- X axis title: centered below chart -->
+        <div style="display:flex;justify-content:center;margin-top:4px;">
+          <div class="inline-edit axis-title-el"
+            id="x-axis-title"
+            contenteditable="true"
+            spellcheck="false"
+            data-placeholder="X axis label…"></div>
+        </div>
       </div>
 
       <div class="legend" id="legend"></div>
@@ -310,6 +315,7 @@ function fmtVal(v,units){
     case 'dollar': return '$'+v.toLocaleString();
     case 'k':      return '$'+(v/1000).toFixed(1)+'k';
     case 'M':      return '$'+(v/1e6).toFixed(2)+'M';
+    case 'B':      return '$'+(v/1e9).toFixed(2)+'B';
     case 'pct':    return gt>0?(v/gt*100).toFixed(1)+'%':'0%';
     default:       return v.toLocaleString();
   }
@@ -323,6 +329,7 @@ function fmtLabel(v,rw,units){
     case 'dollar': return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1000?'$'+Math.round(v/1000)+'k':'$'+v;
     case 'k':      return '$'+(v/1000).toFixed(1)+'k';
     case 'M':      return '$'+(v/1e6).toFixed(2)+'M';
+    case 'B':      return '$'+(v/1e9).toFixed(2)+'B';
     case 'pct':    return gt>0?(v/gt*100).toFixed(1)+'%':'0%';
     default:       return v.toLocaleString();
   }
@@ -334,6 +341,7 @@ function fmtTotal(gt,units){
     case 'dollar': return 'Total: $'+gt.toLocaleString();
     case 'k':      return 'Total: $'+(gt/1000).toFixed(1)+'k';
     case 'M':      return 'Total: $'+(gt/1e6).toFixed(2)+'M';
+    case 'B':      return 'Total: $'+(gt/1e9).toFixed(2)+'B';
     case 'pct':    return 'Total: 100%';
     default:       return 'Total: '+gt.toLocaleString();
   }
@@ -385,13 +393,13 @@ function downloadPNG() {
   // Chart SVG content (shifted down by topPad)
   svgContent += `<g transform="translate(0,${topPad})">${svg.innerHTML}</g>`;
 
-  // Y axis title
+  // Y axis title — rotated, centered on left side
   if (yTitle) {
-    svgContent += `<text x="12" y="${topPad+H+18}" font-size="11" fill="#6b6860" font-family="sans-serif">${esc(yTitle)}</text>`;
+    svgContent += `<text x="14" y="${topPad + H/2}" font-size="11" fill="#6b6860" font-family="sans-serif" text-anchor="middle" transform="rotate(-90,14,${topPad + H/2})">${esc(yTitle)}</text>`;
   }
-  // X axis title
+  // X axis title — centered below chart
   if (xTitle) {
-    svgContent += `<text x="${W-12}" y="${topPad+H+18}" font-size="11" fill="#6b6860" font-family="sans-serif" text-anchor="end">${esc(xTitle)}</text>`;
+    svgContent += `<text x="${W/2}" y="${topPad+H+18}" font-size="11" fill="#6b6860" font-family="sans-serif" text-anchor="middle">${esc(xTitle)}</text>`;
   }
 
   // Legend
