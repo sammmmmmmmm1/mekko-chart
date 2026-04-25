@@ -130,6 +130,20 @@
   .swatch.selected { border-color: var(--text); }
   .color-popover-footer { display: flex; align-items: center; gap: 8px; }
   .color-popover-footer label { font-size: 12px; color: var(--text2); }
+
+  /* Color scheme picker */
+  .scheme-picker { display: flex; gap: 5px; align-items: center; }
+  .scheme-swatch { display: flex; border-radius: 5px; overflow: hidden; cursor: pointer; border: 2px solid transparent; transition: all 0.12s; height: 22px; }
+  .scheme-swatch:hover { transform: scale(1.08); }
+  .scheme-swatch.active { border-color: var(--text); }
+  .scheme-swatch span { display: block; width: 10px; height: 100%; }
+
+  /* Drag-sortable col blocks */
+  .col-block.dragging { opacity: 0.45; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .col-block.drag-over { box-shadow: inset 0 0 0 2px var(--green); }
+  .drag-handle { cursor: grab; color: var(--text3); font-size: 14px; padding: 0 4px; user-select: none; line-height: 1; }
+  .drag-handle:hover { color: var(--text2); }
+  .drag-handle:active { cursor: grabbing; }
 </style>
 </head>
 <body>
@@ -170,6 +184,10 @@
             <button class="label-mode-btn" data-mode="value" onclick="setLabelMode('value')">Value</button>
             <button class="label-mode-btn" data-mode="none" onclick="setLabelMode('none')">None</button>
           </div>
+        </div>
+        <div class="units-wrap">
+          <span class="units-label">Theme:</span>
+          <div class="scheme-picker" id="scheme-picker"></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="chart-hint">Click a segment to change color</span>
@@ -298,8 +316,38 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const PALETTE = ['#2D6A4F','#2166AC','#D4522A','#6B4EAE','#B07D1F','#C2436B','#3A7D44','#C0392B','#1A7070','#4472B8','#8E5EA2','#D4870A','#2E86AB','#A3320B','#4D8B31'];
 const SWATCH_LIST = ['#2D6A4F','#1D9E75','#5DCAA5','#9FE1CB','#2166AC','#378ADD','#85B7EB','#B5D4F4','#D4522A','#E8845A','#F5C4B3','#6B4EAE','#9B7FD4','#B07D1F','#D4AA50','#FAC775','#C2436B','#ED93B1','#3A7D44','#639922','#C0392B','#E24B4A','#555555','#888888','#bbbbbb','#1a1917','#0a4f6e','#6b2d2d','#2d4a1f','#4a2d6b'];
+
+const COLOR_SCHEMES = {
+  default: { label:'Default', colors:['#2D6A4F','#2166AC','#D4522A','#6B4EAE','#B07D1F','#C2436B','#3A7D44','#C0392B','#1A7070','#4472B8'] },
+  ocean:   { label:'Ocean',   colors:['#0A4F6E','#1471A0','#2196C8','#5BBCE0','#93D6EE','#0D7377','#14A085','#29C4A9','#68DFC8','#A8EFE3'] },
+  earth:   { label:'Earth',   colors:['#6B3A2A','#9C5636','#C47A4A','#D4A464','#E8C98A','#4A3728','#7A5C3C','#A07850','#C09C6C','#D4B888'] },
+  berry:   { label:'Berry',   colors:['#4A1060','#7B2FA0','#A855C8','#C98ADE','#E0B8EE','#8B1A4A','#B83070','#D4608C','#E898B4','#F5C8D8'] },
+  slate:   { label:'Slate',   colors:['#1A2535','#2D4060','#4A6080','#6B8499','#94A8B8','#2A3545','#3D5470','#5A7090','#7A90A8','#9AAFC0'] },
+  citrus:  { label:'Citrus',  colors:['#7A4800','#B06C00','#D4920A','#E8B830','#F5D460','#4A5A00','#6E8400','#9CAC00','#C4CC30','#DDE070'] },
+};
+
+let activeScheme = 'default';
+
+function applyScheme(key) {
+  activeScheme = key;
+  const colors = COLOR_SCHEMES[key].colors;
+  state.colors = {};
+  state.rows.forEach((row, i) => { state.colors[row] = colors[i % colors.length]; });
+  renderSchemePicker();
+  drawChart();
+  if(document.getElementById('panel-data').classList.contains('active')) renderRowsTable();
+}
+
+function renderSchemePicker() {
+  document.getElementById('scheme-picker').innerHTML = Object.entries(COLOR_SCHEMES).map(([key, scheme]) => {
+    const preview = scheme.colors.slice(0,5).map(c=>`<span style="background:${c}"></span>`).join('');
+    return `<div class="scheme-swatch${key===activeScheme?' active':''}" data-scheme="${key}" title="${scheme.label}" onclick="applyScheme('${key}')">${preview}</div>`;
+  }).join('');
+}
+
+// drag state for column reordering
+let dragSrcIdx = null;
 
 let state = {
   rows: ['Vendor A','Vendor B','Vendor C','Other'],
@@ -312,7 +360,11 @@ let state = {
   colors: {}
 };
 
-function getColor(row,i){return state.colors[row]||PALETTE[i%PALETTE.length];}
+function getColor(row,i){
+  if(state.colors[row]) return state.colors[row];
+  const scheme = COLOR_SCHEMES[activeScheme] || COLOR_SCHEMES.default;
+  return scheme.colors[i % scheme.colors.length];
+}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
@@ -571,14 +623,42 @@ function addRow(){
 function renderEditor(){
   const grid=document.getElementById('data-grid');grid.innerHTML='';
   state.columns.forEach((col,ci)=>{
-    const block=document.createElement('div');block.className='col-block';
+    const block=document.createElement('div');
+    block.className='col-block';
+    block.draggable=true;
+    block.dataset.ci=ci;
     const rows=state.rows.map((r,ri)=>`
       <div class="row-line">
         <div class="row-line-color" style="background:${getColor(r,ri)}"></div>
         <div class="row-label" title="${esc(r)}">${esc(r)}</div>
         <input type="number" min="0" value="${col.values[ri]||0}" oninput="state.columns[${ci}].values[${ri}]=parseFloat(this.value)||0"/>
       </div>`).join('');
-    block.innerHTML=`<div class="col-header"><input type="text" value="${esc(col.name)}" placeholder="Column name" oninput="state.columns[${ci}].name=this.value"/><button class="btn btn-icon" onclick="removeColumn(${ci})" title="Remove">🗑</button></div>${rows}`;
+    block.innerHTML=`<div class="col-header"><span class="drag-handle" title="Drag to reorder">⠿</span><input type="text" value="${esc(col.name)}" placeholder="Column name" oninput="state.columns[${ci}].name=this.value"/><button class="btn btn-icon" onclick="removeColumn(${ci})" title="Remove">🗑</button></div>${rows}`;
+    // drag events
+    block.addEventListener('dragstart', e=>{
+      dragSrcIdx=ci;
+      block.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+    });
+    block.addEventListener('dragend', ()=>{
+      block.classList.remove('dragging');
+      document.querySelectorAll('.col-block').forEach(b=>b.classList.remove('drag-over'));
+    });
+    block.addEventListener('dragover', e=>{
+      e.preventDefault(); e.dataTransfer.dropEffect='move';
+      document.querySelectorAll('.col-block').forEach(b=>b.classList.remove('drag-over'));
+      block.classList.add('drag-over');
+    });
+    block.addEventListener('drop', e=>{
+      e.preventDefault();
+      const destIdx=parseInt(block.dataset.ci);
+      if(dragSrcIdx!==null&&dragSrcIdx!==destIdx){
+        const [moved]=state.columns.splice(dragSrcIdx,1);
+        state.columns.splice(destIdx,0,moved);
+        renderEditor();
+      }
+      dragSrcIdx=null;
+    });
     grid.appendChild(block);
   });
 }
@@ -679,11 +759,23 @@ function drawChart(){
   });
   axes+=`<line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
   axes+=`<line x1="${PAD.left}" y1="${PAD.top+cH}" x2="${PAD.left+cW}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
-  colMeta.forEach(c=>{
+  colMeta.forEach((c,ci)=>{
     const mid=c.x+c.w/2;
     axes+=`<text x="${mid}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="sans-serif" font-weight="500">${esc(c.name)}</text>`;
     axes+=`<text x="${mid}" y="${PAD.top+cH+30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="monospace">${c.pct}%</text>`;
     if(c.x>PAD.left)axes+=`<line x1="${c.x}" y1="${PAD.top}" x2="${c.x}" y2="${PAD.top+cH}" stroke="#e8e6de" stroke-width="0.5"/>`;
+    // Reorder arrows: ◀ left, ▶ right — only show when there's room and a neighbour exists
+    if(c.w>44){
+      const ay=PAD.top+cH+22, r=7;
+      if(ci>0){
+        axes+=`<circle cx="${c.x+14}" cy="${ay}" r="${r}" fill="transparent" stroke="#c8c6bc" stroke-width="1" style="cursor:pointer;" onclick="moveColumn(${ci},-1)"/>`;
+        axes+=`<text x="${c.x+14}" y="${ay+4}" text-anchor="middle" font-size="9" fill="#6b6860" style="cursor:pointer;pointer-events:none;">◀</text>`;
+      }
+      if(ci<state.columns.length-1){
+        axes+=`<circle cx="${c.x+c.w-14}" cy="${ay}" r="${r}" fill="transparent" stroke="#c8c6bc" stroke-width="1" style="cursor:pointer;" onclick="moveColumn(${ci},1)"/>`;
+        axes+=`<text x="${c.x+c.w-14}" y="${ay+4}" text-anchor="middle" font-size="9" fill="#6b6860" style="cursor:pointer;pointer-events:none;">▶</text>`;
+      }
+    }
   });
 
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
@@ -705,6 +797,14 @@ function drawChart(){
   ).join('');
 }
 
+function moveColumn(ci, dir){
+  const target = ci + dir;
+  if(target < 0 || target >= state.columns.length) return;
+  [state.columns[ci], state.columns[target]] = [state.columns[target], state.columns[ci]];
+  drawChart();
+  if(document.getElementById('panel-data').classList.contains('active')) renderEditor();
+}
+
 function moveTip(e){
   const tip=document.getElementById('tooltip'),wrap=document.getElementById('chart-wrap');
   const rect=wrap.getBoundingClientRect();
@@ -719,6 +819,7 @@ document.querySelectorAll('[contenteditable]').forEach(el=>{
   el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}});
 });
 
+renderSchemePicker();
 drawChart();
 window.addEventListener('resize',()=>{if(document.getElementById('panel-chart').classList.contains('active'))drawChart();});
 </script>
