@@ -1,0 +1,236 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); color: var(--color-text-primary); }
+  .app { padding: 1rem 0; }
+  h2 { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 1.5rem; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; }
+  .tab { padding: 6px 16px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; cursor: pointer; font-size: 13px; color: var(--color-text-secondary); }
+  .tab.active { background: var(--color-background-secondary); color: var(--color-text-primary); border-color: var(--color-border-primary); font-weight: 500; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  .chart-wrap { position: relative; width: 100%; height: 380px; margin-bottom: 1rem; }
+  svg.mekko { width: 100%; height: 100%; overflow: visible; }
+  .tooltip { position: absolute; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 8px 12px; font-size: 12px; pointer-events: none; display: none; z-index: 10; line-height: 1.6; min-width: 140px; }
+  .tooltip strong { display: block; font-weight: 500; font-size: 13px; }
+  .data-area { display: flex; flex-direction: column; gap: 12px; }
+  .col-block { background: var(--color-background-secondary); border-radius: var(--border-radius-md); padding: 12px; }
+  .col-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .col-header input[type=text] { flex: 1; }
+  .col-header button.del { width: 28px; height: 28px; border-radius: var(--border-radius-md); background: transparent; border: 0.5px solid var(--color-border-secondary); color: var(--color-text-secondary); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+  .row-line { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .row-line span.row-label { font-size: 12px; color: var(--color-text-secondary); width: 90px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .row-line input[type=number] { width: 80px; }
+  .btn { padding: 7px 16px; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-secondary); background: transparent; cursor: pointer; font-size: 13px; color: var(--color-text-primary); }
+  .btn:hover { background: var(--color-background-secondary); }
+  .btn-primary { background: var(--color-background-info); color: var(--color-text-info); border-color: transparent; }
+  .btn-primary:hover { opacity: 0.85; }
+  .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .section-label { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 6px; display: block; }
+  .row-mgmt { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; flex-wrap: wrap; }
+  .row-mgmt input[type=text] { width: 120px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--color-text-secondary); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+</style>
+
+<div class="app">
+  <h2>Mekko chart builder</h2>
+  <p class="subtitle">Each rectangle's area represents its share of the grand total. X-axis = column width, Y-axis = row share within column.</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('chart')">Chart</button>
+    <button class="tab" onclick="switchTab('data')">Edit data</button>
+  </div>
+
+  <div id="panel-chart" class="panel active">
+    <div class="chart-wrap" id="chart-wrap">
+      <svg class="mekko" id="mekko-svg"></svg>
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div id="panel-data" class="panel">
+    <div class="row-mgmt">
+      <span style="font-size:13px; font-weight:500;">Row segments:</span>
+      <input type="text" id="new-row-name" placeholder="Row name..." />
+      <button class="btn" onclick="addRow()">+ Add row</button>
+    </div>
+    <div class="data-area" id="data-area"></div>
+    <div class="toolbar">
+      <button class="btn" onclick="addColumn()">+ Add column</button>
+      <button class="btn btn-primary" onclick="switchTab('chart')">Draw chart ↗</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PALETTE = [
+  '#1D9E75','#378ADD','#D85A30','#7F77DD','#BA7517',
+  '#D4537E','#639922','#E24B4A','#5DCAA5','#85B7EB',
+  '#F09595','#AFA9EC','#EF9F27','#ED93B1','#97C459'
+];
+
+let state = {
+  rows: ['Vendor A','Vendor B','Vendor C','Other'],
+  columns: [
+    { name: 'Q1', values: [141658, 82634, 44268, 27594] },
+    { name: 'Q2', values: [105358, 87798, 30102, 27594] },
+    { name: 'Q3', values: [177072, 47957, 41317, 28774] },
+    { name: 'Q4', values: [70829, 87798, 35414, 15494] },
+  ]
+};
+
+function switchTab(id) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['chart','data'][i] === id));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if (id === 'chart') drawChart();
+  if (id === 'data') renderDataEditor();
+}
+
+function renderDataEditor() {
+  const area = document.getElementById('data-area');
+  area.innerHTML = '';
+  state.columns.forEach((col, ci) => {
+    const block = document.createElement('div');
+    block.className = 'col-block';
+    let rowsHtml = state.rows.map((r, ri) => `
+      <div class="row-line">
+        <span class="row-label" title="${r}">${r}</span>
+        <input type="number" min="0" value="${col.values[ri] || 0}"
+          oninput="state.columns[${ci}].values[${ri}]=parseFloat(this.value)||0" />
+      </div>`).join('');
+    block.innerHTML = `
+      <div class="col-header">
+        <input type="text" value="${col.name}" placeholder="Column name"
+          oninput="state.columns[${ci}].name=this.value" style="font-weight:500;" />
+        <button class="del" onclick="removeColumn(${ci})" title="Remove column">✕</button>
+      </div>
+      ${rowsHtml}`;
+    area.appendChild(block);
+  });
+}
+
+function addColumn() {
+  state.columns.push({ name: 'New', values: state.rows.map(() => 0) });
+  renderDataEditor();
+}
+
+function removeColumn(ci) {
+  state.columns.splice(ci, 1);
+  renderDataEditor();
+}
+
+function addRow() {
+  const inp = document.getElementById('new-row-name');
+  const name = inp.value.trim() || 'Row ' + (state.rows.length + 1);
+  state.rows.push(name);
+  state.columns.forEach(c => c.values.push(0));
+  inp.value = '';
+  renderDataEditor();
+}
+
+function drawChart() {
+  const svg = document.getElementById('mekko-svg');
+  const wrap = document.getElementById('chart-wrap');
+  const W = wrap.clientWidth;
+  const H = 360;
+  const PAD = { top: 28, right: 4, bottom: 32, left: 44 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top - PAD.bottom;
+
+  const colTotals = state.columns.map(c => c.values.reduce((a,b)=>a+b,0));
+  const grandTotal = colTotals.reduce((a,b)=>a+b,0);
+  if (grandTotal === 0) { svg.innerHTML = '<text x="50%" y="50%" text-anchor="middle" fill="gray">No data</text>'; return; }
+
+  const rowColors = {};
+  state.rows.forEach((r, i) => rowColors[r] = PALETTE[i % PALETTE.length]);
+
+  let elements = '';
+  let xCursor = 0;
+  const colXs = [];
+
+  state.columns.forEach((col, ci) => {
+    const colTotal = colTotals[ci];
+    const colFrac = colTotal / grandTotal;
+    const rectW = colFrac * cW;
+    const xPx = PAD.left + xCursor;
+    colXs.push({ x: xPx, w: rectW, name: col.name, pct: Math.round(colFrac * 100) });
+    let yCursor = 0;
+    state.rows.forEach((row, ri) => {
+      const val = col.values[ri] || 0;
+      const rowFrac = colTotal > 0 ? val / colTotal : 0;
+      const rectH = rowFrac * cH;
+      const yPx = PAD.top + yCursor;
+      const color = rowColors[row];
+      const gap = 1.5;
+      if (val > 0) {
+        const label = val >= grandTotal * 0.015 ? `${row.length > 10 ? row.slice(0,9)+'…' : row}\n$${(val/1000).toFixed(0)}k` : '';
+        const lx = xPx + rectW / 2;
+        const ly = yPx + rectH / 2;
+        const pct = Math.round(rowFrac * 100);
+        elements += `<rect x="${xPx+gap}" y="${yPx+gap}" width="${Math.max(rectW-gap*2,0)}" height="${Math.max(rectH-gap*2,0)}" fill="${color}" rx="3"
+          data-tip="${row} / ${col.name}|$${val.toLocaleString()} (${pct}% of column, ${Math.round(val/grandTotal*100)}% of total)"
+          style="cursor:pointer;" />`;
+        if (rectH > 22 && rectW > 36) {
+          const lines = label.split('\n');
+          const fontSize = rectW < 60 ? 10 : 11;
+          elements += lines.map((l,li)=>`<text x="${lx}" y="${ly + (li-(lines.length-1)/2)*14}" text-anchor="middle" font-size="${fontSize}" fill="white" font-family="var(--font-sans)" style="pointer-events:none;">${l}</text>`).join('');
+        }
+      }
+      yCursor += rectH;
+    });
+    xCursor += rectW;
+  });
+
+  let axes = '';
+  axes += `<line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top+cH}" stroke="var(--color-border-secondary)" stroke-width="0.5"/>`;
+  axes += `<line x1="${PAD.left}" y1="${PAD.top+cH}" x2="${PAD.left+cW}" y2="${PAD.top+cH}" stroke="var(--color-border-secondary)" stroke-width="0.5"/>`;
+  [0,25,50,75,100].forEach(v => {
+    const y = PAD.top + (1 - v/100) * cH;
+    axes += `<line x1="${PAD.left-4}" y1="${y}" x2="${PAD.left+cW}" y2="${y}" stroke="var(--color-border-tertiary)" stroke-width="0.5" stroke-dasharray="${v===0||v===100?'none':'3,3'}"/>`;
+    axes += `<text x="${PAD.left-7}" y="${y+4}" text-anchor="end" font-size="11" fill="var(--color-text-secondary)" font-family="var(--font-sans)">${v}%</text>`;
+  });
+  colXs.forEach(c => {
+    const midX = c.x + c.w / 2;
+    axes += `<text x="${midX}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="11" fill="var(--color-text-secondary)" font-family="var(--font-sans)">${c.name}</text>`;
+    axes += `<text x="${midX}" y="${PAD.top+cH+27}" text-anchor="middle" font-size="10" fill="var(--color-text-tertiary,#aaa)" font-family="var(--font-sans)">${c.pct}%</text>`;
+  });
+
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svg.innerHTML = axes + elements;
+
+  svg.querySelectorAll('rect[data-tip]').forEach(r => {
+    r.addEventListener('mouseenter', e => {
+      const [title, body] = r.dataset.tip.split('|');
+      const tip = document.getElementById('tooltip');
+      tip.innerHTML = `<strong>${title}</strong>${body}`;
+      tip.style.display = 'block';
+      moveTip(e);
+    });
+    r.addEventListener('mousemove', moveTip);
+    r.addEventListener('mouseleave', () => document.getElementById('tooltip').style.display = 'none');
+  });
+
+  const legend = document.getElementById('legend');
+  legend.innerHTML = state.rows.map((r,i) =>
+    `<div class="legend-item"><div class="legend-dot" style="background:${rowColors[r]}"></div>${r}</div>`
+  ).join('');
+}
+
+function moveTip(e) {
+  const tip = document.getElementById('tooltip');
+  const wrap = document.getElementById('chart-wrap');
+  const rect = wrap.getBoundingClientRect();
+  let x = e.clientX - rect.left + 12;
+  let y = e.clientY - rect.top + 12;
+  if (x + 160 > wrap.clientWidth) x -= 165;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+
+drawChart();
+</script>
