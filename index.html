@@ -453,15 +453,26 @@ function processFile(file){
       const wb=XLSX.read(e.target.result,{type:'array'});
       const ws=wb.Sheets[wb.SheetNames[0]];
       const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:0});
-      const rows=raw.filter(r=>r.some(c=>c!==''&&c!==0&&c!==null&&c!==undefined));
-      if(rows.length<2) throw new Error('Not enough data rows');
-      const colNames=rows[0].slice(1).map(c=>String(c).trim()).filter(c=>c!=='');
+
+      // Find the first row that looks like headers (has a blank first cell + text in subsequent cells)
+      // This handles both row 1 layouts and the template's row 3 layout
+      let headerRowIdx = -1;
+      for (let i = 0; i < Math.min(raw.length, 6); i++) {
+        const row = raw[i];
+        const hasTextCols = row.slice(1).some(c => c !== '' && c !== 0 && isNaN(parseFloat(c)));
+        const firstCellEmpty = !row[0] || String(row[0]).trim() === '';
+        if (firstCellEmpty && hasTextCols) { headerRowIdx = i; break; }
+      }
+      // Fallback: just use row 0
+      if (headerRowIdx === -1) headerRowIdx = 0;
+
+      const colNames = raw[headerRowIdx].slice(1).map(c=>String(c).trim()).filter(c=>c!=='');
       if(colNames.length===0) throw new Error('No column headers found');
       const newRows=[],newCols=colNames.map(n=>({name:n,values:[]}));
-      for(let i=1;i<rows.length;i++){
-        const seg=String(rows[i][0]).trim();if(!seg)continue;
+      for(let i=headerRowIdx+1;i<raw.length;i++){
+        const seg=String(raw[i][0]).trim();if(!seg)continue;
         newRows.push(seg);
-        colNames.forEach((_,ci)=>{const v=parseFloat(rows[i][ci+1]);newCols[ci].values.push(isNaN(v)?0:v);});
+        colNames.forEach((_,ci)=>{const v=parseFloat(raw[i][ci+1]);newCols[ci].values.push(isNaN(v)?0:v);});
       }
       if(newRows.length===0) throw new Error('No segment rows found');
       state.rows=newRows;state.columns=newCols;state.colors={};
