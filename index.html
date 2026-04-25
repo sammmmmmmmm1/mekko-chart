@@ -35,6 +35,9 @@
   .units-label { font-size: 12px; color: var(--text2); }
   .units-select { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; outline: none; cursor: pointer; }
   .units-select:focus { border-color: var(--border2); }
+  .label-mode-toggle { display: flex; gap: 2px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; }
+  .label-mode-btn { padding: 3px 10px; border-radius: 4px; border: none; background: transparent; cursor: pointer; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text2); font-weight: 500; transition: all 0.12s; white-space: nowrap; }
+  .label-mode-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.07); }
 
   /* Editable inline titles — look like real text, only reveal edit on hover */
   .title-block { margin-bottom: 4px; }
@@ -158,6 +161,15 @@
             <option value="B">$B (billions)</option>
             <option value="pct">% (percent of total)</option>
           </select>
+        </div>
+        <div class="units-wrap">
+          <span class="units-label">Labels:</span>
+          <div class="label-mode-toggle" id="label-mode-toggle">
+            <button class="label-mode-btn" data-mode="name" onclick="setLabelMode('name')">Row</button>
+            <button class="label-mode-btn active" data-mode="both" onclick="setLabelMode('both')">Both</button>
+            <button class="label-mode-btn" data-mode="value" onclick="setLabelMode('value')">Value</button>
+            <button class="label-mode-btn" data-mode="none" onclick="setLabelMode('none')">None</button>
+          </div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="chart-hint">Click a segment to change color</span>
@@ -306,6 +318,11 @@ function showToast(msg){const t=document.getElementById('toast');t.textContent=m
 
 // ── Units ─────────────────────────────────────────────────
 function getUnits(){return document.getElementById('units-select').value;}
+function getLabelMode(){return document.querySelector('.label-mode-btn.active')?.dataset.mode||'both';}
+function setLabelMode(mode){
+  document.querySelectorAll('.label-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  drawChart();
+}
 
 function fmtVal(v,units){
   units=units||getUnits();
@@ -600,52 +617,55 @@ function drawChart(){
       const rx=xPx+gap,ry=yPx+gap,rw=Math.max(rectW-gap*2,0),rh=Math.max(rectH-gap*2,0);
       const pctCol=Math.round(rowFrac*100),pctTotal=Math.round(val/grandTotal*100);
       rects+=`<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${color}" rx="3" data-row="${esc(row)}" data-col="${esc(col.name)}" data-val="${val}" data-ri="${ri}" data-pctcol="${pctCol}" data-pcttotal="${pctTotal}" style="cursor:pointer;transition:opacity 0.1s;"/>`;
-      // Adaptive label: try to fit name+value, then just value, then nothing
+      // Adaptive label: respects label mode (both/name/value/none), autosizes to fit
       {
         const lx=xPx+rectW/2, ly=yPx+rectH/2;
         const valStr=fmtLabel(val,rw,units);
-        // Estimate character width at a given font size (sans-serif ≈ 0.55× size, mono ≈ 0.60× size)
-        function fits(text,fs,availW){return text.length*fs*0.58<availW-6;}
-        // Truncate row name to fit available width at a given font size
-        function truncate(text,fs,availW){
-          let s=text;
-          while(s.length>1&&!fits(s,fs,availW))s=s.slice(0,-1);
-          return s.length<text.length?s.slice(0,-1)+'…':s;
-        }
-        // We need at least ~18px height for one line, ~34px for two lines
-        const canTwoLine=rh>34&&rw>28;
-        const canOneLine=rh>18&&rw>24;
-        if(canTwoLine){
-          // Try font sizes from 11 down to 8; pick largest where both lines fit
-          let chosen=null;
-          for(const fs of [11,10,9,8]){
-            const nameStr=truncate(row,fs,rw);
-            if(fits(valStr,fs,rw)){chosen={fs,nameStr};break;}
+        const labelMode=getLabelMode();
+        if(labelMode!=='none'){
+          function fits(text,fs,availW){return text.length*fs*0.58<availW-6;}
+          function truncate(text,fs,availW){
+            let s=text;
+            while(s.length>1&&!fits(s,fs,availW))s=s.slice(0,-1);
+            return s.length<text.length?s.slice(0,-1)+'…':s;
           }
-          if(chosen){
-            const {fs,nameStr}=chosen;
-            const lineGap=fs+3;
-            labels+=`<text x="${lx}" y="${ly-lineGap/2}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="sans-serif" style="pointer-events:none;">${esc(nameStr)}</text>`;
-            labels+=`<text x="${lx}" y="${ly+lineGap/2+fs-1}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
-          } else if(canOneLine){
-            // Fall back: just the value on one line
+          const showName=labelMode==='name'||labelMode==='both';
+          const showValue=labelMode==='value'||labelMode==='both';
+          const canTwoLine=showName&&showValue&&rh>34&&rw>28;
+          const canOneLine=rh>18&&rw>24;
+          if(canTwoLine){
+            let chosen=null;
             for(const fs of [11,10,9,8]){
-              if(fits(valStr,fs,rw)){
-                labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.85)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+              if(fits(valStr,fs,rw)){chosen={fs};break;}
+            }
+            if(chosen){
+              const {fs}=chosen;
+              const nameStr=truncate(row,fs,rw);
+              const lineGap=fs+3;
+              labels+=`<text x="${lx}" y="${ly-lineGap/2}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="sans-serif" style="pointer-events:none;">${esc(nameStr)}</text>`;
+              labels+=`<text x="${lx}" y="${ly+lineGap/2+fs-1}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+            } else if(canOneLine){
+              // Can't fit both — fall back to value only
+              for(const fs of [11,10,9,8]){
+                if(fits(valStr,fs,rw)){
+                  labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.85)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+                  break;
+                }
+              }
+            }
+          } else if(canOneLine){
+            const str=showName&&!showValue?row:valStr;
+            const isMono=!showName||showValue;
+            for(const fs of [11,10,9,8]){
+              const display=showName&&!showValue?truncate(str,fs,rw):str;
+              if(fits(display,fs,rw)){
+                labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.85)" font-family="${isMono?'monospace':'sans-serif'}" style="pointer-events:none;">${esc(display)}</text>`;
                 break;
               }
             }
           }
-        } else if(canOneLine){
-          // Single line: value only, autosize
-          for(const fs of [11,10,9,8]){
-            if(fits(valStr,fs,rw)){
-              labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.85)" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
-              break;
-            }
-          }
+          // else: too small — show nothing (tooltip still works)
         }
-        // else: segment too small — show nothing (tooltip still works on hover)
       }
       yCursor+=rectH;
     });
