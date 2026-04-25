@@ -21,74 +21,57 @@
   header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
   header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.3px; }
 
-  .btn-analyze { display: flex; align-items: center; gap: 7px; padding: 8px 20px; border-radius: var(--radius); border: none; background: var(--accent); color: #fff; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; flex-shrink: 0; }
-  .btn-analyze:hover { opacity: 0.82; }
-  .btn-analyze:disabled { opacity: 0.45; cursor: not-allowed; }
-  .btn-analyze .spark { font-size: 14px; }
-
   .tabs { display: flex; gap: 4px; margin-bottom: 1.5rem; background: var(--surface2); border-radius: var(--radius); padding: 3px; width: fit-content; border: 1px solid var(--border); }
   .tab { padding: 6px 18px; border-radius: 6px; border: none; background: transparent; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; color: var(--text2); font-weight: 500; transition: all 0.15s; }
   .tab.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Analysis */
-  .analysis-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1.5rem; overflow: hidden; display: none; }
-  .analysis-panel.visible { display: block; }
-  .analysis-panel-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface2); }
-  .analysis-badge { background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 20px; letter-spacing: 0.6px; text-transform: uppercase; margin-right: 10px; }
-  .analysis-panel-title { font-size: 14px; font-weight: 600; }
-  .btn-close { width: 26px; height: 26px; border-radius: 6px; border: none; background: transparent; cursor: pointer; font-size: 14px; color: var(--text3); display: flex; align-items: center; justify-content: center; }
-  .btn-close:hover { background: var(--border); color: var(--text); }
-  .analysis-body { padding: 20px 20px 24px; }
-  .loading-dots { display: flex; align-items: center; gap: 5px; padding: 4px 0; }
-  .loading-dots span { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); display: inline-block; animation: dotbounce 1.2s ease-in-out infinite; }
-  .loading-dots span:nth-child(2) { animation-delay: 0.18s; }
-  .loading-dots span:nth-child(3) { animation-delay: 0.36s; }
-  @keyframes dotbounce { 0%,80%,100%{transform:translateY(0);opacity:0.5} 40%{transform:translateY(-5px);opacity:1} }
-  .takeaways { display: flex; flex-direction: column; gap: 10px; }
-  .takeaway { border-left: 3px solid var(--border2); padding: 12px 16px; border-radius: 0 var(--radius) var(--radius) 0; background: var(--surface2); }
-  .takeaway.highlight { border-left-color: var(--accent); }
-  .takeaway.positive { border-left-color: var(--green); }
-  .takeaway.warning { border-left-color: #c47d0e; }
-  .takeaway-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text3); margin-bottom: 5px; }
-  .takeaway.highlight .takeaway-label { color: var(--accent); }
-  .takeaway.positive .takeaway-label { color: var(--green); }
-  .takeaway.warning .takeaway-label { color: #c47d0e; }
-  .takeaway-text { font-size: 14px; line-height: 1.7; color: var(--text); }
-  .takeaway-text strong { font-weight: 600; }
-
   /* Chart card */
   .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.5rem 1rem; }
-  .chart-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; gap: 10px; flex-wrap: wrap; }
-  .chart-hint { font-size: 12px; color: var(--text3); }
+  .chart-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 10px; flex-wrap: wrap; }
   .chart-total { font-size: 13px; font-weight: 600; color: var(--text2); font-family: 'DM Mono', monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
-
-  /* Editable titles */
-  .chart-title-wrap { margin-bottom: 0.25rem; }
-  .editable-title { font-size: 15px; font-weight: 600; color: var(--text); border: none; outline: none; background: transparent; width: 100%; font-family: 'DM Sans', sans-serif; padding: 3px 6px; border-radius: 5px; transition: background 0.15s; }
-  .editable-title:hover { background: var(--surface2); }
-  .editable-title:focus { background: var(--surface2); outline: 1.5px solid var(--border2); }
-  .editable-title::placeholder { color: var(--text3); font-weight: 400; }
-  .axis-titles { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; gap: 8px; }
-  .editable-axis { font-size: 12px; color: var(--text2); border: none; outline: none; background: transparent; font-family: 'DM Sans', sans-serif; padding: 2px 6px; border-radius: 5px; transition: background 0.15s; min-width: 60px; }
-  .editable-axis:hover { background: var(--surface2); }
-  .editable-axis:focus { background: var(--surface2); outline: 1.5px solid var(--border2); }
-  .editable-axis::placeholder { color: var(--text3); }
-  .editable-axis.y-title { writing-mode: horizontal-tb; }
-
-  /* Units picker */
   .units-wrap { display: flex; align-items: center; gap: 6px; }
   .units-label { font-size: 12px; color: var(--text2); }
   .units-select { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; outline: none; cursor: pointer; }
   .units-select:focus { border-color: var(--border2); }
 
-  .chart-wrap { position: relative; width: 100%; height: 380px; margin-bottom: 0.25rem; }
+  /* Editable inline titles — look like real text, only reveal edit on hover */
+  .title-block { margin-bottom: 4px; }
+  .inline-edit {
+    display: inline-block; position: relative; cursor: text;
+    border-radius: 4px; transition: background 0.12s;
+  }
+  .inline-edit:hover { background: var(--surface2); }
+  .inline-edit:hover::after {
+    content: '✎';
+    position: absolute; right: -18px; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--text3); pointer-events: none;
+  }
+  .inline-edit[contenteditable="true"]:focus {
+    background: var(--surface2);
+    outline: 1.5px solid var(--border2);
+  }
+  .inline-edit.chart-title-el {
+    font-size: 15px; font-weight: 600; color: var(--text);
+    padding: 2px 6px; min-width: 40px; display: block; width: 100%;
+  }
+  .inline-edit.chart-title-el:empty::before { content: attr(data-placeholder); color: var(--text3); font-weight: 400; pointer-events: none; }
+  .inline-edit.axis-title-el {
+    font-size: 12px; color: var(--text2);
+    padding: 2px 5px; min-width: 30px;
+  }
+  .inline-edit.axis-title-el:empty::before { content: attr(data-placeholder); color: var(--text3); pointer-events: none; }
+  .axis-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }
+
+  .chart-wrap { position: relative; width: 100%; height: 380px; margin-bottom: 0; }
   svg.mekko { width: 100%; height: 100%; overflow: visible; }
   .tooltip { position: absolute; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius); padding: 10px 14px; font-size: 12px; pointer-events: none; display: none; z-index: 10; line-height: 1.7; min-width: 160px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
   .tooltip strong { display: block; font-size: 13px; font-weight: 600; margin-bottom: 2px; }
   .tip-pct { color: var(--text2); font-size: 11px; }
-  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0.5rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
+  .chart-hint { font-size: 12px; color: var(--text3); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
   .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text2); cursor: pointer; padding: 3px 6px; border-radius: 5px; transition: background 0.1s; }
   .legend-item:hover { background: var(--surface2); }
   .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
@@ -151,22 +134,7 @@
 
   <header>
     <h1>Mekko chart builder</h1>
-    <button class="btn-analyze" id="analyze-btn" onclick="runAnalysis()">
-      <span class="spark">✦</span> Analyze
-    </button>
   </header>
-
-  <!-- ANALYSIS PANEL -->
-  <div class="analysis-panel" id="analysis-panel">
-    <div class="analysis-panel-header">
-      <div style="display:flex;align-items:center;">
-        <span class="analysis-badge">AI</span>
-        <span class="analysis-panel-title">Chart analysis</span>
-      </div>
-      <button class="btn-close" onclick="closeAnalysis()">✕</button>
-    </div>
-    <div class="analysis-body" id="analysis-body"></div>
-  </div>
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('chart')">Chart</button>
@@ -178,7 +146,7 @@
   <div id="panel-chart" class="panel active">
     <div class="chart-card">
 
-      <!-- Toolbar: hint + units + total -->
+      <!-- Toolbar -->
       <div class="chart-toolbar">
         <div class="units-wrap">
           <span class="units-label">Units:</span>
@@ -190,27 +158,43 @@
             <option value="pct">% (percent of total)</option>
           </select>
         </div>
-        <div style="display:flex;align-items:center;gap:10px;">
+        <div style="display:flex;align-items:center;gap:8px;">
           <span class="chart-hint">Click a segment to change color</span>
           <span class="chart-total" id="chart-total"></span>
+          <button class="btn" onclick="downloadPNG()" title="Download as PNG" style="display:flex;align-items:center;gap:5px;padding:6px 12px;">
+            <span style="font-size:14px;">↓</span> PNG
+          </button>
         </div>
       </div>
 
-      <!-- Editable chart title -->
-      <div class="chart-title-wrap">
-        <input class="editable-title" id="chart-title" type="text" placeholder="Click to add chart title…" />
+      <!-- Chart title (inline editable) -->
+      <div class="title-block">
+        <div class="inline-edit chart-title-el"
+          id="chart-title"
+          contenteditable="true"
+          spellcheck="false"
+          data-placeholder="Click to add chart title…"></div>
       </div>
 
-      <!-- Chart -->
+      <!-- Chart SVG -->
       <div class="chart-wrap" id="chart-wrap">
         <svg class="mekko" id="mekko-svg"></svg>
         <div class="tooltip" id="tooltip"></div>
       </div>
 
-      <!-- X and Y axis titles below/beside chart -->
-      <div class="axis-titles">
-        <input class="editable-axis" id="y-axis-title" type="text" placeholder="Y axis label…" style="width:110px;" />
-        <input class="editable-axis" id="x-axis-title" type="text" placeholder="X axis label…" style="text-align:right;width:110px;" />
+      <!-- Axis titles -->
+      <div class="axis-row">
+        <div class="inline-edit axis-title-el"
+          id="y-axis-title"
+          contenteditable="true"
+          spellcheck="false"
+          data-placeholder="Y axis label…"></div>
+        <div class="inline-edit axis-title-el"
+          id="x-axis-title"
+          contenteditable="true"
+          spellcheck="false"
+          data-placeholder="X axis label…"
+          style="text-align:right;"></div>
       </div>
 
       <div class="legend" id="legend"></div>
@@ -315,92 +299,136 @@ function getColor(row,i){return state.colors[row]||PALETTE[i%PALETTE.length];}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
-// ── Units & formatting ────────────────────────────────────
-function getUnits(){ return document.getElementById('units-select').value; }
+// ── Units ─────────────────────────────────────────────────
+function getUnits(){return document.getElementById('units-select').value;}
 
-function fmtVal(v, units) {
-  units = units || getUnits();
-  const raw = state.columns.reduce((s,c)=>s+c.values.reduce((a,b)=>a+b,0),0);
-  switch(units) {
+function fmtVal(v,units){
+  units=units||getUnits();
+  const gt=state.columns.reduce((s,c)=>s+c.values.reduce((a,b)=>a+b,0),0);
+  switch(units){
     case 'raw':    return v.toLocaleString();
     case 'dollar': return '$'+v.toLocaleString();
     case 'k':      return '$'+(v/1000).toFixed(1)+'k';
-    case 'M':      return '$'+(v/1000000).toFixed(2)+'M';
-    case 'pct':    return raw>0 ? (v/raw*100).toFixed(1)+'%' : '0%';
+    case 'M':      return '$'+(v/1e6).toFixed(2)+'M';
+    case 'pct':    return gt>0?(v/gt*100).toFixed(1)+'%':'0%';
     default:       return v.toLocaleString();
   }
 }
 
-function fmtLabel(v, rectW, units) {
-  units = units || getUnits();
-  const grandTotal = state.columns.reduce((s,c)=>s+c.values.reduce((a,b)=>a+b,0),0);
-  switch(units) {
-    case 'raw':    return rectW<70 ? v.toLocaleString() : v.toLocaleString();
-    case 'dollar': return v>=1e6 ? '$'+(v/1e6).toFixed(1)+'M' : v>=1000 ? '$'+Math.round(v/1000)+'k' : '$'+v;
+function fmtLabel(v,rw,units){
+  units=units||getUnits();
+  const gt=state.columns.reduce((s,c)=>s+c.values.reduce((a,b)=>a+b,0),0);
+  switch(units){
+    case 'raw':    return v.toLocaleString();
+    case 'dollar': return v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1000?'$'+Math.round(v/1000)+'k':'$'+v;
     case 'k':      return '$'+(v/1000).toFixed(1)+'k';
     case 'M':      return '$'+(v/1e6).toFixed(2)+'M';
-    case 'pct':    return grandTotal>0 ? (v/grandTotal*100).toFixed(1)+'%' : '0%';
+    case 'pct':    return gt>0?(v/gt*100).toFixed(1)+'%':'0%';
     default:       return v.toLocaleString();
   }
 }
 
-function fmtTotal(grandTotal, units) {
-  switch(units) {
-    case 'raw':    return 'Total: '+grandTotal.toLocaleString();
-    case 'dollar': return 'Total: $'+grandTotal.toLocaleString();
-    case 'k':      return 'Total: $'+(grandTotal/1000).toFixed(1)+'k';
-    case 'M':      return 'Total: $'+(grandTotal/1e6).toFixed(2)+'M';
+function fmtTotal(gt,units){
+  switch(units){
+    case 'raw':    return 'Total: '+gt.toLocaleString();
+    case 'dollar': return 'Total: $'+gt.toLocaleString();
+    case 'k':      return 'Total: $'+(gt/1000).toFixed(1)+'k';
+    case 'M':      return 'Total: $'+(gt/1e6).toFixed(2)+'M';
     case 'pct':    return 'Total: 100%';
-    default:       return 'Total: '+grandTotal.toLocaleString();
+    default:       return 'Total: '+gt.toLocaleString();
   }
 }
 
-// ── Analysis ──────────────────────────────────────────────
-function buildDataSummary(){
-  const colTotals=state.columns.map(c=>c.values.reduce((a,b)=>a+b,0));
-  const grandTotal=colTotals.reduce((a,b)=>a+b,0);
-  let lines=[`Mekko chart. Grand total: $${grandTotal.toLocaleString()}`,'','Columns:'];
-  state.columns.forEach((col,ci)=>{
-    lines.push(`  ${col.name}: $${colTotals[ci].toLocaleString()} (${Math.round(colTotals[ci]/grandTotal*100)}% of total)`);
-    state.rows.forEach((row,ri)=>{
-      const val=col.values[ri]||0;
-      lines.push(`    ${row}: $${val.toLocaleString()} (${colTotals[ci]>0?Math.round(val/colTotals[ci]*100):0}% of col, ${Math.round(val/grandTotal*100)}% of total)`);
-    });
-  });
-  lines.push('','Row totals:');
-  state.rows.forEach((row,ri)=>{
-    const rt=state.columns.reduce((s,c)=>s+(c.values[ri]||0),0);
-    lines.push(`  ${row}: $${rt.toLocaleString()} (${Math.round(rt/grandTotal*100)}% of total)`);
-  });
-  return lines.join('\n');
-}
+// ── Download PNG ──────────────────────────────────────────
+function downloadPNG() {
+  const card = document.querySelector('.chart-card');
+  const chartTitle = document.getElementById('chart-title').textContent.trim() || 'mekko-chart';
 
-function closeAnalysis(){document.getElementById('analysis-panel').classList.remove('visible');}
+  // Build a standalone SVG that includes all chart content + titles + legend
+  const svg = document.getElementById('mekko-svg');
+  const wrap = document.getElementById('chart-wrap');
+  const W = wrap.clientWidth;
+  const H = wrap.clientHeight;
 
-async function runAnalysis(){
-  const btn=document.getElementById('analyze-btn'),panel=document.getElementById('analysis-panel'),body=document.getElementById('analysis-body');
-  switchTab('chart');
-  btn.disabled=true; btn.innerHTML='<span class="spark">✦</span> Analyzing…';
-  panel.classList.add('visible');
-  body.innerHTML='<div class="loading-dots"><span></span><span></span><span></span></div>';
-  try{
-    const response=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',max_tokens:1000,
-        system:`You are a sharp junior strategy consultant. Analyze Mekko chart data and return ONLY a JSON array of 4-5 takeaways. Each item: {"label":"short tag","type":"highlight|positive|warning|neutral","text":"1-2 sentences with the insight and specific numbers. Bold key phrases with <strong> tags."}. No markdown, no explanation, just the JSON array.`,
-        messages:[{role:'user',content:'Analyze:\n\n'+buildDataSummary()}]
-      })
-    });
-    const data=await response.json();
-    const raw=data.content.map(b=>b.text||'').join('').trim().replace(/^```json\s*/,'').replace(/```$/,'').trim();
-    const takeaways=JSON.parse(raw);
-    body.innerHTML='<div class="takeaways">'+takeaways.map(t=>`<div class="takeaway ${t.type||'neutral'}"><div class="takeaway-label">${esc(t.label)}</div><div class="takeaway-text">${t.text}</div></div>`).join('')+'</div>';
-  } catch(err){
-    body.innerHTML=`<p style="font-size:13px;color:var(--text2);">Analysis unavailable — API access required. (${err.message})</p>`;
+  const titleText = document.getElementById('chart-title').textContent.trim();
+  const xTitle = document.getElementById('x-axis-title').textContent.trim();
+  const yTitle = document.getElementById('y-axis-title').textContent.trim();
+  const totalText = document.getElementById('chart-total').textContent.trim();
+
+  // Collect legend items
+  const legendItems = [];
+  document.querySelectorAll('#legend .legend-item').forEach(el => {
+    const dot = el.querySelector('.legend-dot');
+    const color = dot ? dot.style.background : '#aaa';
+    legendItems.push({ color, label: el.textContent.trim() });
+  });
+
+  const legendH = legendItems.length > 0 ? 28 : 0;
+  const topPad = titleText ? 32 : 10;
+  const bottomPad = 36 + legendH;
+  const totalH = topPad + H + bottomPad;
+
+  let svgContent = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${totalH}" style="background:#ffffff;font-family:sans-serif;">`;
+
+  // White background
+  svgContent += `<rect width="${W}" height="${totalH}" fill="#ffffff"/>`;
+
+  // Chart title
+  if (titleText) {
+    svgContent += `<text x="12" y="22" font-size="15" font-weight="600" fill="#1a1917" font-family="sans-serif">${esc(titleText)}</text>`;
   }
-  btn.disabled=false; btn.innerHTML='<span class="spark">✦</span> Analyze';
+  // Total badge
+  if (totalText) {
+    svgContent += `<text x="${W-12}" y="22" font-size="12" fill="#6b6860" font-family="monospace" text-anchor="end">${esc(totalText)}</text>`;
+  }
+
+  // Chart SVG content (shifted down by topPad)
+  svgContent += `<g transform="translate(0,${topPad})">${svg.innerHTML}</g>`;
+
+  // Y axis title
+  if (yTitle) {
+    svgContent += `<text x="12" y="${topPad+H+18}" font-size="11" fill="#6b6860" font-family="sans-serif">${esc(yTitle)}</text>`;
+  }
+  // X axis title
+  if (xTitle) {
+    svgContent += `<text x="${W-12}" y="${topPad+H+18}" font-size="11" fill="#6b6860" font-family="sans-serif" text-anchor="end">${esc(xTitle)}</text>`;
+  }
+
+  // Legend
+  if (legendItems.length > 0) {
+    let lx = 12;
+    const ly = topPad + H + 32;
+    legendItems.forEach(item => {
+      svgContent += `<rect x="${lx}" y="${ly-9}" width="10" height="10" rx="2" fill="${item.color}"/>`;
+      svgContent += `<text x="${lx+14}" y="${ly}" font-size="11" fill="#6b6860" font-family="sans-serif">${esc(item.label)}</text>`;
+      lx += item.label.length * 7 + 28;
+    });
+  }
+
+  svgContent += `</svg>`;
+
+  // Render via canvas
+  const blob = new Blob([svgContent], {type:'image/svg+xml'});
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    const scale = 2; // retina
+    canvas.width = W * scale;
+    canvas.height = totalH * scale;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, W, totalH);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.download = (chartTitle || 'mekko-chart') + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    showToast('Chart downloaded!');
+  };
+  img.src = url;
 }
 
 // ── Import ────────────────────────────────────────────────
@@ -534,10 +562,9 @@ function drawChart(){
   const grandTotal=colTotals.reduce((a,b)=>a+b,0);
   const units=getUnits();
 
-  // Update total badge
-  document.getElementById('chart-total').textContent = grandTotal>0 ? fmtTotal(grandTotal,units) : '';
+  document.getElementById('chart-total').textContent=grandTotal>0?fmtTotal(grandTotal,units):'';
 
-  if(grandTotal===0){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#aaa" font-family="DM Sans,sans-serif" font-size="14">No data to display</text>`;return;}
+  if(grandTotal===0){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#aaa" font-family="sans-serif" font-size="14">No data to display</text>`;return;}
 
   let rects='',labels='',axes='',xCursor=0;
   const colMeta=[];
@@ -557,8 +584,8 @@ function drawChart(){
       if(rh>24&&rw>40){
         const lx=xPx+rectW/2,ly=yPx+rectH/2,fs=rw<70?10:11;
         const sr=row.length>12?row.slice(0,11)+'…':row;
-        labels+=`<text x="${lx}" y="${ly-6}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="DM Sans,sans-serif" style="pointer-events:none;">${esc(sr)}</text>`;
-        labels+=`<text x="${lx}" y="${ly+9}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="DM Mono,monospace" style="pointer-events:none;">${fmtLabel(val,rw,units)}</text>`;
+        labels+=`<text x="${lx}" y="${ly-6}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="sans-serif" style="pointer-events:none;">${esc(sr)}</text>`;
+        labels+=`<text x="${lx}" y="${ly+9}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="monospace" style="pointer-events:none;">${fmtLabel(val,rw,units)}</text>`;
       }
       yCursor+=rectH;
     });
@@ -568,14 +595,14 @@ function drawChart(){
   [0,25,50,75,100].forEach(v=>{
     const y=PAD.top+(1-v/100)*cH,dash=(v===0||v===100)?'':'stroke-dasharray="4,4"';
     axes+=`<line x1="${PAD.left}" y1="${y}" x2="${PAD.left+cW}" y2="${y}" stroke="#dddbd3" stroke-width="0.5" ${dash}/>`;
-    axes+=`<text x="${PAD.left-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#9e9c96" font-family="DM Mono,monospace">${v}%</text>`;
+    axes+=`<text x="${PAD.left-8}" y="${y+4}" text-anchor="end" font-size="11" fill="#9e9c96" font-family="monospace">${v}%</text>`;
   });
   axes+=`<line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
   axes+=`<line x1="${PAD.left}" y1="${PAD.top+cH}" x2="${PAD.left+cW}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
   colMeta.forEach(c=>{
     const mid=c.x+c.w/2;
-    axes+=`<text x="${mid}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="DM Sans,sans-serif" font-weight="500">${esc(c.name)}</text>`;
-    axes+=`<text x="${mid}" y="${PAD.top+cH+30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="DM Mono,monospace">${c.pct}%</text>`;
+    axes+=`<text x="${mid}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="sans-serif" font-weight="500">${esc(c.name)}</text>`;
+    axes+=`<text x="${mid}" y="${PAD.top+cH+30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="monospace">${c.pct}%</text>`;
     if(c.x>PAD.left)axes+=`<line x1="${c.x}" y1="${PAD.top}" x2="${c.x}" y2="${PAD.top+cH}" stroke="#e8e6de" stroke-width="0.5"/>`;
   });
 
@@ -606,6 +633,11 @@ function moveTip(e){
   if(y+110>wrap.clientHeight)y-=120;
   tip.style.left=x+'px';tip.style.top=y+'px';
 }
+
+// Prevent Enter key from inserting newlines in title fields
+document.querySelectorAll('[contenteditable]').forEach(el=>{
+  el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}});
+});
 
 drawChart();
 window.addEventListener('resize',()=>{if(document.getElementById('panel-chart').classList.contains('active'))drawChart();});
