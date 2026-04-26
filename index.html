@@ -27,14 +27,17 @@
   .panel { display: none; }
   .panel.active { display: block; }
 
-  /* Chart card */
-  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem 1.5rem 1rem 2.75rem; }
-  .chart-toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; gap: 10px; flex-wrap: wrap; }
-  .chart-total { font-size: 13px; font-weight: 600; color: var(--text2); font-family: 'DM Mono', monospace; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; white-space: nowrap; }
-  .units-wrap { display: flex; align-items: center; gap: 6px; }
-  .units-label { font-size: 12px; color: var(--text2); }
-  .units-select { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; outline: none; cursor: pointer; }
+  /* Chart toolbar — single compact row above chart card */
+  .chart-toolbar { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .tb-sep { width: 1px; height: 18px; background: var(--border2); flex-shrink: 0; margin: 0 2px; }
+  .units-wrap { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+  .units-label { font-size: 11px; color: var(--text3); white-space: nowrap; }
+  .units-select { font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 3px 6px; outline: none; cursor: pointer; }
   .units-select:focus { border-color: var(--border2); }
+  .label-mode-toggle { display: flex; gap: 1px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; flex-shrink: 0; }
+  .label-mode-btn { padding: 2px 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer; font-size: 11px; font-family: 'DM Sans', sans-serif; color: var(--text2); font-weight: 500; transition: all 0.12s; white-space: nowrap; }
+  .label-mode-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.07); }
+  .tb-spacer { flex: 1; min-width: 0; }
 
   /* Editable inline titles — look like real text, only reveal edit on hover */
   .title-block { margin-bottom: 4px; }
@@ -118,7 +121,8 @@
   .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   .divider { border: none; border-top: 1px solid var(--border); margin: 1.25rem 0; }
 
-  /* Color picker */
+  /* Chart card */
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.5rem 1rem 2.75rem; }
   .color-popover { position: fixed; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 14px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: none; width: 228px; }
   .color-popover h4 { font-size: 12px; font-weight: 600; color: var(--text2); margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .color-swatches { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 10px; }
@@ -127,6 +131,45 @@
   .swatch.selected { border-color: var(--text); }
   .color-popover-footer { display: flex; align-items: center; gap: 8px; }
   .color-popover-footer label { font-size: 12px; color: var(--text2); }
+
+  /* Color scheme picker — popover */
+  .theme-btn { display: flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border); background: var(--surface2); cursor: pointer; font-size: 11px; font-family: 'DM Sans', sans-serif; color: var(--text2); font-weight: 500; transition: all 0.12s; white-space: nowrap; }
+  .theme-btn:hover { border-color: var(--border2); color: var(--text); }
+  .theme-btn-preview { display: flex; border-radius: 3px; overflow: hidden; height: 12px; gap: 0; }
+  .theme-btn-preview span { display: block; width: 7px; }
+  .theme-popover { position: fixed; background: var(--surface); border: 1px solid var(--border2); border-radius: var(--radius-lg); padding: 10px; z-index: 1000; box-shadow: 0 8px 32px rgba(0,0,0,0.12); display: none; width: 200px; }
+  .theme-option { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: background 0.1s; }
+  .theme-option:hover { background: var(--surface2); }
+  .theme-option.active { background: var(--surface2); }
+  .theme-option-preview { display: flex; border-radius: 3px; overflow: hidden; height: 14px; flex-shrink: 0; }
+  .theme-option-preview span { display: block; width: 9px; }
+  .theme-option-name { font-size: 12px; color: var(--text); font-weight: 500; }
+  .theme-option.active .theme-option-name { font-weight: 600; }
+  .theme-option-check { margin-left: auto; font-size: 11px; color: var(--green); }
+
+  /* Drag-sortable col blocks */
+  .col-block.dragging { opacity: 0.45; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+  .col-block.drag-over { box-shadow: inset 0 0 0 2px var(--green); }
+  .drag-handle { cursor: grab; color: var(--text3); font-size: 14px; padding: 0 4px; user-select: none; line-height: 1; }
+  .drag-handle:hover { color: var(--text2); }
+  .drag-handle:active { cursor: grabbing; }
+
+  /* Metric color mode */
+  .metric-input { width: 72px !important; font-size: 11px !important; padding: 4px 6px !important; background: #fffbf0 !important; border-color: #e8d88a !important; font-family: 'DM Mono', monospace !important; }
+  .metric-input:focus { border-color: #c8a800 !important; }
+  .metric-label { font-size: 10px; color: var(--text3); white-space: nowrap; }
+  .color-mode-toggle { display: flex; gap: 1px; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 2px; flex-shrink: 0; }
+  .color-mode-btn { padding: 2px 8px; border-radius: 4px; border: none; background: transparent; cursor: pointer; font-size: 11px; font-family: 'DM Sans', sans-serif; color: var(--text2); font-weight: 500; transition: all 0.12s; white-space: nowrap; }
+  .color-mode-btn.active { background: var(--surface); color: var(--text); box-shadow: 0 1px 2px rgba(0,0,0,0.07); }
+
+  /* Gradient legend */
+  .gradient-legend { display: flex; align-items: center; gap: 8px; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .gradient-bar { height: 12px; border-radius: 4px; flex: 1; min-width: 120px; max-width: 260px; }
+  .gradient-legend-labels { display: flex; justify-content: space-between; font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text2); min-width: 120px; max-width: 260px; flex: 1; }
+  .gradient-bound { display: flex; align-items: center; gap: 4px; }
+  .gradient-bound input[type=number] { width: 60px !important; font-size: 11px !important; padding: 3px 5px !important; }
+  .gradient-scale-select { font-size: 11px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); border: 1px solid var(--border); border-radius: 5px; padding: 2px 5px; outline: none; cursor: pointer; }
+  .metric-name-input { font-size: 11px !important; padding: 3px 6px !important; width: 90px !important; }
 </style>
 </head>
 <body>
@@ -144,29 +187,65 @@
 
   <!-- CHART TAB -->
   <div id="panel-chart" class="panel active">
-    <div class="chart-card">
 
-      <!-- Toolbar -->
-      <div class="chart-toolbar">
-        <div class="units-wrap">
-          <span class="units-label">Units:</span>
-          <select class="units-select" id="units-select" onchange="drawChart()">
-            <option value="raw">None (raw numbers)</option>
-            <option value="dollar" selected>$ (dollars)</option>
-            <option value="k">$k (thousands)</option>
-            <option value="M">$M (millions)</option>
-            <option value="B">$B (billions)</option>
-            <option value="pct">% (percent of total)</option>
-          </select>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px;">
-          <span class="chart-hint">Click a segment to change color</span>
-          <span class="chart-total" id="chart-total"></span>
-          <button class="btn" onclick="downloadPNG()" title="Download as PNG" style="display:flex;align-items:center;gap:5px;padding:6px 12px;">
-            <span style="font-size:14px;">↓</span> PNG
-          </button>
+    <!-- Compact toolbar above chart card -->
+    <div class="chart-toolbar">
+      <div class="units-wrap">
+        <span class="units-label">Units</span>
+        <select class="units-select" id="units-select" onchange="drawChart()">
+          <option value="raw">None</option>
+          <option value="dollar" selected>$</option>
+          <option value="k">$k</option>
+          <option value="M">$M</option>
+          <option value="B">$B</option>
+          <option value="pct">%</option>
+        </select>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="units-wrap">
+        <span class="units-label">Labels</span>
+        <div class="label-mode-toggle" id="label-mode-toggle">
+          <button class="label-mode-btn" data-mode="name" onclick="setLabelMode('name')">Row</button>
+          <button class="label-mode-btn active" data-mode="both" onclick="setLabelMode('both')">Both</button>
+          <button class="label-mode-btn" data-mode="value" onclick="setLabelMode('value')">Value</button>
+          <button class="label-mode-btn" data-mode="none" onclick="setLabelMode('none')">None</button>
         </div>
       </div>
+      <div class="tb-sep"></div>
+      <div class="units-wrap">
+        <span class="units-label">Color by</span>
+        <div class="color-mode-toggle">
+          <button class="color-mode-btn active" data-cmode="row" onclick="setColorMode('row')">Row</button>
+          <button class="color-mode-btn" data-cmode="metric" onclick="setColorMode('metric')">Metric</button>
+        </div>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="units-wrap" id="theme-wrap">
+        <span class="units-label">Theme</span>
+        <button class="theme-btn" id="theme-btn" onclick="toggleThemePopover(event)">
+          <div class="theme-btn-preview" id="theme-btn-preview"></div>
+          <span id="theme-btn-label">Default</span>
+          <span style="font-size:9px;color:var(--text3);">▾</span>
+        </button>
+      </div>
+      <div class="tb-sep" id="sort-sep"></div>
+      <div class="units-wrap" id="sort-wrap">
+        <span class="units-label">Sort</span>
+        <select class="units-select" id="sort-select" onchange="applySortOrder(this.value)">
+          <option value="manual">Manual</option>
+          <option value="desc">Largest → Smallest</option>
+          <option value="asc">Smallest → Largest</option>
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+        </select>
+      </div>
+      <div class="tb-spacer"></div>
+      <button class="btn" onclick="downloadPNG()" style="display:flex;align-items:center;gap:4px;padding:4px 10px;font-size:12px;flex-shrink:0;">
+        <span style="font-size:13px;">↓</span> PNG
+      </button>
+    </div>
+
+    <div class="chart-card">
 
       <!-- Chart title (inline editable) -->
       <div class="title-block">
@@ -202,9 +281,29 @@
         </div>
       </div>
 
-      <div class="legend" id="legend"></div>
+      <div id="legend-row" class="legend"></div>
+      <div id="legend-metric" class="gradient-legend" style="display:none;">
+        <div class="gradient-bound">
+          <span class="units-label">Min</span>
+          <input type="number" id="metric-min" value="-20" class="metric-bound-input" style="width:60px;font-size:11px;padding:3px 5px;" oninput="drawChart()"/>
+        </div>
+        <div style="flex:1;min-width:80px;">
+          <div class="gradient-bar" id="gradient-bar"></div>
+        </div>
+        <div class="gradient-bound">
+          <span class="units-label">Max</span>
+          <input type="number" id="metric-max" value="20" class="metric-bound-input" style="width:60px;font-size:11px;padding:3px 5px;" oninput="drawChart()"/>
+        </div>
+        <select class="gradient-scale-select" id="gradient-scale" onchange="drawChart()">
+          <option value="ryg">Red → Yellow → Green</option>
+          <option value="bwr">Blue → White → Red</option>
+          <option value="puor">Purple → Orange</option>
+          <option value="wg">White → Green</option>
+        </select>
+        <span class="units-label" id="metric-name-label" style="margin-left:4px;"></span>
+      </div>
     </div>
-  </div>
+  </div><!-- end panel-chart -->
 
   <!-- DATA TAB -->
   <div id="panel-data" class="panel">
@@ -216,7 +315,13 @@
         <button class="btn" onclick="addRow()">+ Add row</button>
       </div>
       <hr class="divider" />
-      <div class="section-header" style="margin-bottom:0.75rem;"><h3>Columns</h3></div>
+      <div class="section-header" style="margin-bottom:0.75rem;display:flex;align-items:center;gap:10px;">
+        <h3>Columns</h3>
+        <div id="metric-name-editor" style="display:flex;align-items:center;gap:5px;margin-left:8px;">
+          <span style="font-size:11px;color:var(--text3);">Metric label:</span>
+          <input type="text" class="metric-name-input" value="Margin %" placeholder="e.g. Margin %" style="font-size:11px;padding:3px 6px;width:90px;" oninput="state.metricName=this.value;updateGradientBar();document.querySelectorAll('.metric-col-header').forEach(el=>el.textContent=this.value);"/>
+        </div>
+      </div>
       <div class="data-grid" id="data-grid"></div>
       <div class="toolbar">
         <button class="btn" onclick="addColumn()">+ Add column</button>
@@ -238,7 +343,7 @@
       </div>
       <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:14px;margin-bottom:1.25rem;">
         <p style="font-size:13px;font-weight:600;margin-bottom:8px;">Expected format</p>
-        <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">First column = segment names, first row = column headers, everything else = values.</p>
+        <p style="font-size:12px;color:var(--text2);margin-bottom:10px;">Sheet named <strong>Values</strong>: first column = segment names, first row = column headers, rest = values. Optionally add a sheet named <strong>Color</strong> with the same layout containing per-cell metric values (e.g. margin %).</p>
         <table style="border-collapse:collapse;font-size:12px;font-family:'DM Mono',monospace;width:100%;">
           <tr>
             <td style="padding:5px 10px;background:var(--accent);color:#fff;border-radius:4px 0 0 0;font-weight:600;"></td>
@@ -271,6 +376,9 @@
   </div>
 </div>
 
+<!-- Theme popover -->
+<div class="theme-popover" id="theme-popover"></div>
+
 <!-- Color picker -->
 <div class="color-popover" id="color-popover">
   <h4 id="popover-title">Change color</h4>
@@ -286,26 +394,173 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const PALETTE = ['#2D6A4F','#2166AC','#D4522A','#6B4EAE','#B07D1F','#C2436B','#3A7D44','#C0392B','#1A7070','#4472B8','#8E5EA2','#D4870A','#2E86AB','#A3320B','#4D8B31'];
 const SWATCH_LIST = ['#2D6A4F','#1D9E75','#5DCAA5','#9FE1CB','#2166AC','#378ADD','#85B7EB','#B5D4F4','#D4522A','#E8845A','#F5C4B3','#6B4EAE','#9B7FD4','#B07D1F','#D4AA50','#FAC775','#C2436B','#ED93B1','#3A7D44','#639922','#C0392B','#E24B4A','#555555','#888888','#bbbbbb','#1a1917','#0a4f6e','#6b2d2d','#2d4a1f','#4a2d6b'];
+
+const COLOR_SCHEMES = {
+  default: { label:'Default', colors:['#2D6A4F','#2166AC','#D4522A','#6B4EAE','#B07D1F','#C2436B','#3A7D44','#C0392B','#1A7070','#4472B8'] },
+  ocean:   { label:'Ocean',   colors:['#0A4F6E','#1471A0','#2196C8','#5BBCE0','#93D6EE','#0D7377','#14A085','#29C4A9','#68DFC8','#A8EFE3'] },
+  earth:   { label:'Earth',   colors:['#6B3A2A','#9C5636','#C47A4A','#D4A464','#E8C98A','#4A3728','#7A5C3C','#A07850','#C09C6C','#D4B888'] },
+  berry:   { label:'Berry',   colors:['#4A1060','#7B2FA0','#A855C8','#C98ADE','#E0B8EE','#8B1A4A','#B83070','#D4608C','#E898B4','#F5C8D8'] },
+  slate:   { label:'Slate',   colors:['#1A2535','#2D4060','#4A6080','#6B8499','#94A8B8','#2A3545','#3D5470','#5A7090','#7A90A8','#9AAFC0'] },
+  citrus:  { label:'Citrus',  colors:['#7A4800','#B06C00','#D4920A','#E8B830','#F5D460','#4A5A00','#6E8400','#9CAC00','#C4CC30','#DDE070'] },
+};
+
+let activeScheme = 'default';
+
+function renderThemeBtn() {
+  const scheme = COLOR_SCHEMES[activeScheme];
+  document.getElementById('theme-btn-label').textContent = scheme.label;
+  document.getElementById('theme-btn-preview').innerHTML = scheme.colors.slice(0,5).map(c=>`<span style="background:${c}"></span>`).join('');
+}
+
+function renderThemePopover() {
+  document.getElementById('theme-popover').innerHTML = Object.entries(COLOR_SCHEMES).map(([key, scheme]) => {
+    const preview = scheme.colors.slice(0,5).map(c=>`<span style="background:${c}"></span>`).join('');
+    const isActive = key === activeScheme;
+    return `<div class="theme-option${isActive?' active':''}" onclick="applyScheme('${key}')">
+      <div class="theme-option-preview">${preview}</div>
+      <span class="theme-option-name">${scheme.label}</span>
+      ${isActive?'<span class="theme-option-check">✓</span>':''}
+    </div>`;
+  }).join('');
+}
+
+function toggleThemePopover(e) {
+  const pop = document.getElementById('theme-popover');
+  if (pop.style.display === 'block') { pop.style.display = 'none'; return; }
+  renderThemePopover();
+  pop.style.display = 'block';
+  const btn = document.getElementById('theme-btn');
+  const rect = btn.getBoundingClientRect();
+  let left = rect.left, top = rect.bottom + 6;
+  if (left + 204 > window.innerWidth - 8) left = window.innerWidth - 212;
+  if (top + 260 > window.innerHeight - 8) top = rect.top - 266;
+  pop.style.left = Math.max(8, left) + 'px';
+  pop.style.top = Math.max(8, top) + 'px';
+  e.stopPropagation();
+}
+
+document.addEventListener('click', e => {
+  const pop = document.getElementById('theme-popover');
+  if (pop && pop.style.display === 'block' && !pop.contains(e.target) && e.target.id !== 'theme-btn' && !e.target.closest('#theme-btn'))
+    pop.style.display = 'none';
+});
+
+function applyScheme(key) {
+  activeScheme = key;
+  const colors = COLOR_SCHEMES[key].colors;
+  state.colors = {};
+  state.rows.forEach((row, i) => { state.colors[row] = colors[i % colors.length]; });
+  document.getElementById('theme-popover').style.display = 'none';
+  renderThemeBtn();
+  drawChart();
+  if(document.getElementById('panel-data').classList.contains('active')) renderRowsTable();
+}
+
+// ── Sort columns ──────────────────────────────────────────
+function applySortOrder(order) {
+  if (order === 'manual') return; // nothing to do, user drags
+  const cols = [...state.columns];
+  if (order === 'desc') cols.sort((a,b) => b.values.reduce((s,v)=>s+v,0) - a.values.reduce((s,v)=>s+v,0));
+  else if (order === 'asc') cols.sort((a,b) => a.values.reduce((s,v)=>s+v,0) - b.values.reduce((s,v)=>s+v,0));
+  else if (order === 'az') cols.sort((a,b) => a.name.localeCompare(b.name));
+  else if (order === 'za') cols.sort((a,b) => b.name.localeCompare(a.name));
+  state.columns = cols;
+  // Reset to manual after applying so repeated sorts work
+  setTimeout(() => { document.getElementById('sort-select').value = 'manual'; }, 50);
+  drawChart();
+  if(document.getElementById('panel-data').classList.contains('active')) renderEditor();
+}
+
+// drag state for column reordering
+let dragSrcIdx = null;
 
 let state = {
   rows: ['Vendor A','Vendor B','Vendor C','Other'],
   columns: [
-    {name:'Q1', values:[141658,82634,44268,27594]},
-    {name:'Q2', values:[105358,87798,30102,27594]},
-    {name:'Q3', values:[177072,47957,41317,28774]},
-    {name:'Q4', values:[70829,87798,35414,15494]},
+    {name:'Q1', values:[141658,82634,44268,27594], metrics:[12,  -3,  8,  2]},
+    {name:'Q2', values:[105358,87798,30102,27594], metrics:[ 8,   2,  5, -1]},
+    {name:'Q3', values:[177072,47957,41317,28774], metrics:[15,  -1,  3,  4]},
+    {name:'Q4', values:[ 70829,87798,35414,15494], metrics:[ 6, -5, 11,  0]},
   ],
-  colors: {}
+  colors: {},
+  metricName: 'Margin %',
 };
 
-function getColor(row,i){return state.colors[row]||PALETTE[i%PALETTE.length];}
+function getColor(row,i){
+  if(state.colors[row]) return state.colors[row];
+  const scheme = COLOR_SCHEMES[activeScheme] || COLOR_SCHEMES.default;
+  return scheme.colors[i % scheme.colors.length];
+}
+
+// ── Color mode ────────────────────────────────────────────
+let colorMode = 'row'; // 'row' | 'metric'
+
+function hasMetrics(){
+  return state.columns.some(c=>c.metrics&&c.metrics.some(v=>v!==null&&v!==undefined&&v!==''));
+}
+
+function setColorMode(mode){
+  colorMode = mode;
+  document.querySelectorAll('.color-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.cmode===mode));
+  const themeWrap = document.getElementById('theme-wrap');
+  themeWrap.style.display = mode==='metric' ? 'none' : '';
+  document.getElementById('legend-row').style.display = mode==='metric' ? 'none' : '';
+  document.getElementById('legend-metric').style.display = mode==='metric' ? '' : 'none';
+  drawChart();
+}
+
+// Gradient scales: each is [stop0, stop1, stop2?] as {r,g,b}
+const GRADIENTS = {
+  ryg:  [{r:198,g:41, b:41 },{r:255,g:214,b:0  },{r:34, g:139,b:34 }],
+  bwr:  [{r:33, g:102,b:172},{r:255,g:255,b:255},{r:178,g:24, b:43 }],
+  puor: [{r:94, g:60, b:153},{r:247,g:247,b:247},{r:179,g:88, b:6  }],
+  wg:   [{r:240,g:249,b:240},{r:0,  g:109,b:44 }],
+};
+
+function lerpColor(stops, t){
+  t = Math.max(0, Math.min(1, t));
+  if(stops.length === 2){
+    const a=stops[0],b=stops[1];
+    return `rgb(${Math.round(a.r+(b.r-a.r)*t)},${Math.round(a.g+(b.g-a.g)*t)},${Math.round(a.b+(b.b-a.b)*t)})`;
+  }
+  // 3-stop: first half = stops[0]→stops[1], second = stops[1]→stops[2]
+  if(t < 0.5){
+    const tt=t*2, a=stops[0],b=stops[1];
+    return `rgb(${Math.round(a.r+(b.r-a.r)*tt)},${Math.round(a.g+(b.g-a.g)*tt)},${Math.round(a.b+(b.b-a.b)*tt)})`;
+  } else {
+    const tt=(t-0.5)*2, a=stops[1],b=stops[2];
+    return `rgb(${Math.round(a.r+(b.r-a.r)*tt)},${Math.round(a.g+(b.g-a.g)*tt)},${Math.round(a.b+(b.b-a.b)*tt)})`;
+  }
+}
+
+function getMetricColor(val){
+  const scaleKey = document.getElementById('gradient-scale')?.value || 'ryg';
+  const stops = GRADIENTS[scaleKey] || GRADIENTS.ryg;
+  const minV = parseFloat(document.getElementById('metric-min')?.value ?? -20);
+  const maxV = parseFloat(document.getElementById('metric-max')?.value ?? 20);
+  const t = maxV===minV ? 0.5 : (val - minV) / (maxV - minV);
+  return lerpColor(stops, t);
+}
+
+function updateGradientBar(){
+  const scaleKey = document.getElementById('gradient-scale')?.value || 'ryg';
+  const stops = GRADIENTS[scaleKey] || GRADIENTS.ryg;
+  const colors = [0,0.25,0.5,0.75,1].map(t=>lerpColor(stops,t));
+  document.getElementById('gradient-bar').style.background =
+    `linear-gradient(to right, ${colors.join(', ')})`;
+  document.getElementById('metric-name-label').textContent = state.metricName || '';
+}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
 
 // ── Units ─────────────────────────────────────────────────
 function getUnits(){return document.getElementById('units-select').value;}
+function getLabelMode(){return document.querySelector('.label-mode-btn.active')?.dataset.mode||'both';}
+function setLabelMode(mode){
+  document.querySelectorAll('.label-mode-btn').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));
+  drawChart();
+}
 
 function fmtVal(v,units){
   units=units||getUnits();
@@ -361,7 +616,6 @@ function downloadPNG() {
   const titleText = document.getElementById('chart-title').textContent.trim();
   const xTitle = document.getElementById('x-axis-title').textContent.trim();
   const yTitle = document.getElementById('y-axis-title').textContent.trim();
-  const totalText = document.getElementById('chart-total').textContent.trim();
 
   // Collect legend items
   const legendItems = [];
@@ -385,12 +639,8 @@ function downloadPNG() {
   if (titleText) {
     svgContent += `<text x="12" y="22" font-size="15" font-weight="600" fill="#1a1917" font-family="sans-serif">${esc(titleText)}</text>`;
   }
-  // Total badge
-  if (totalText) {
-    svgContent += `<text x="${W-12}" y="22" font-size="12" fill="#6b6860" font-family="monospace" text-anchor="end">${esc(totalText)}</text>`;
-  }
 
-  // Chart SVG content (shifted down by topPad)
+  // Chart SVG content (shifted down by topPad) — total badge is already inside svg.innerHTML
   svgContent += `<g transform="translate(0,${topPad})">${svg.innerHTML}</g>`;
 
   // Y axis title — rotated, centered on left side
@@ -451,35 +701,58 @@ function processFile(file){
   reader.onload=e=>{
     try{
       const wb=XLSX.read(e.target.result,{type:'array'});
-      const ws=wb.Sheets[wb.SheetNames[0]];
-      const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:0});
 
-      // Find the first row that looks like headers (has a blank first cell + text in subsequent cells)
-      // This handles both row 1 layouts and the template's row 3 layout
-      let headerRowIdx = -1;
-      for (let i = 0; i < Math.min(raw.length, 6); i++) {
-        const row = raw[i];
-        const hasTextCols = row.slice(1).some(c => c !== '' && c !== 0 && isNaN(parseFloat(c)));
-        const firstCellEmpty = !row[0] || String(row[0]).trim() === '';
-        if (firstCellEmpty && hasTextCols) { headerRowIdx = i; break; }
-      }
-      // Fallback: just use row 0
-      if (headerRowIdx === -1) headerRowIdx = 0;
+      // Find Values sheet (named 'Values', or fall back to first sheet)
+      const valSheetName = wb.SheetNames.find(n=>n.toLowerCase()==='values') || wb.SheetNames[0];
+      const colSheetName = wb.SheetNames.find(n=>n.toLowerCase()==='color');
 
-      const colNames = raw[headerRowIdx].slice(1).map(c=>String(c).trim()).filter(c=>c!=='');
-      if(colNames.length===0) throw new Error('No column headers found');
-      const newRows=[],newCols=colNames.map(n=>({name:n,values:[]}));
-      for(let i=headerRowIdx+1;i<raw.length;i++){
-        const seg=String(raw[i][0]).trim();if(!seg)continue;
-        newRows.push(seg);
-        colNames.forEach((_,ci)=>{const v=parseFloat(raw[i][ci+1]);newCols[ci].values.push(isNaN(v)?0:v);});
+      function parseSheet(ws){
+        const raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:0});
+        let headerRowIdx=-1;
+        for(let i=0;i<Math.min(raw.length,6);i++){
+          const row=raw[i];
+          const hasTextCols=row.slice(1).some(c=>c!==''&&c!==0&&isNaN(parseFloat(c)));
+          const firstCellEmpty=!row[0]||String(row[0]).trim()==='';
+          if(firstCellEmpty&&hasTextCols){headerRowIdx=i;break;}
+        }
+        if(headerRowIdx===-1)headerRowIdx=0;
+        const colNames=raw[headerRowIdx].slice(1).map(c=>String(c).trim()).filter(c=>c!=='');
+        const rows=[],data=colNames.map(n=>({name:n,values:[]}));
+        for(let i=headerRowIdx+1;i<raw.length;i++){
+          const seg=String(raw[i][0]).trim();if(!seg)continue;
+          rows.push(seg);
+          colNames.forEach((_,ci)=>{const v=parseFloat(raw[i][ci+1]);data[ci].values.push(isNaN(v)?0:v);});
+        }
+        return {rows,data};
       }
+
+      const {rows:newRows, data:newCols} = parseSheet(wb.Sheets[valSheetName]);
       if(newRows.length===0) throw new Error('No segment rows found');
-      state.rows=newRows;state.columns=newCols;state.colors={};
+
+      // Parse Color sheet if present
+      let metricName = 'Metric';
+      if(colSheetName){
+        const {rows:mRows, data:mCols} = parseSheet(wb.Sheets[colSheetName]);
+        // Try to read metric name from sheet tab or first header
+        metricName = colSheetName !== 'Color' ? colSheetName : 'Metric';
+        newCols.forEach((col,ci)=>{
+          const mCol = mCols.find(mc=>mc.name===col.name) || mCols[ci];
+          col.metrics = mCol ? mCol.values : col.values.map(()=>null);
+        });
+      } else {
+        newCols.forEach(col=>{ col.metrics = col.values.map(()=>null); });
+      }
+
+      state.rows=newRows; state.columns=newCols; state.colors={}; state.metricName=metricName;
       dz.classList.add('has-file');
       document.getElementById('drop-zone-title').textContent='✓ '+file.name+' loaded';
-      showToast('Loaded '+newRows.length+' segments × '+colNames.length+' columns');
+      const msg = colSheetName
+        ? `Loaded ${newRows.length} rows × ${newCols.length} columns + Color sheet`
+        : `Loaded ${newRows.length} segments × ${newCols.length} columns`;
+      showToast(msg);
       document.getElementById('import-draw-btn').style.display='inline-flex';
+      // Auto-enable metric mode if Color sheet was found
+      if(colSheetName) setColorMode('metric');
     } catch(err){showToast('Error: '+err.message);}
   };
   reader.readAsArrayBuffer(file);
@@ -500,7 +773,6 @@ function openColorPicker(rowName,anchorEl){
   const ci=document.getElementById('custom-color-input');
   ci.value=normalizeHex(current);ci.oninput=()=>pickColor(rowName,ci.value,false);
   popover.style.display='block';
-  // Use mouse position if anchorEl is an SVG element (no reliable getBoundingClientRect for SVG rects in all browsers)
   let left,top;
   if(anchorEl._lastMouseX!==undefined){
     left=anchorEl._lastMouseX+10;top=anchorEl._lastMouseY+10;
@@ -511,7 +783,6 @@ function openColorPicker(rowName,anchorEl){
   if(left+232>window.innerWidth-8)left=window.innerWidth-240;
   if(top+240>window.innerHeight-8)top=Math.max(8,top-260);
   popover.style.left=Math.max(8,left)+'px';popover.style.top=Math.max(8,top)+'px';
-  // Flag to prevent the same click event from immediately closing the popover
   _pickerJustOpened=true;
   setTimeout(()=>{_pickerJustOpened=false;},0);
 }
@@ -536,7 +807,14 @@ function switchTab(id){
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+id).classList.add('active');
   if(id==='chart')drawChart();
-  if(id==='data'){renderRowsTable();renderEditor();}
+  if(id==='data'){
+    // Sync metric name editor visibility
+    const ed = document.getElementById('metric-name-editor');
+    if(ed){ ed.style.display = colorMode==='metric'?'flex':'none'; }
+    const inp = document.querySelector('.metric-name-input');
+    if(inp) inp.value = state.metricName||'';
+    renderRowsTable();renderEditor();
+  }
 }
 
 // ── Rows ──────────────────────────────────────────────────
@@ -551,32 +829,66 @@ function renderRowsTable(){
 function renameRow(ri,n){const old=state.rows[ri];state.rows[ri]=n;if(state.colors[old]){state.colors[n]=state.colors[old];delete state.colors[old];}}
 function removeRow(ri){
   if(state.rows.length<=1)return alert('Must have at least one row.');
-  const name=state.rows[ri];state.rows.splice(ri,1);state.columns.forEach(c=>c.values.splice(ri,1));delete state.colors[name];
+  const name=state.rows[ri];state.rows.splice(ri,1);
+  state.columns.forEach(c=>{c.values.splice(ri,1);if(c.metrics)c.metrics.splice(ri,1);});
+  delete state.colors[name];
   renderRowsTable();renderEditor();
 }
 function addRow(){
   const inp=document.getElementById('new-row-name');
   const name=inp.value.trim()||('Row '+(state.rows.length+1));
-  state.rows.push(name);state.columns.forEach(c=>c.values.push(0));inp.value='';
+  state.rows.push(name);
+  state.columns.forEach(c=>{c.values.push(0);if(c.metrics)c.metrics.push(0);});
+  inp.value='';
   renderRowsTable();renderEditor();
 }
 
 // ── Columns ───────────────────────────────────────────────
 function renderEditor(){
   const grid=document.getElementById('data-grid');grid.innerHTML='';
+  const showMetrics = colorMode === 'metric';
   state.columns.forEach((col,ci)=>{
-    const block=document.createElement('div');block.className='col-block';
+    const block=document.createElement('div');
+    block.className='col-block';
+    block.draggable=true;
+    block.dataset.ci=ci;
     const rows=state.rows.map((r,ri)=>`
       <div class="row-line">
-        <div class="row-line-color" style="background:${getColor(r,ri)}"></div>
+        <div class="row-line-color" style="background:${colorMode==='metric'?(col.metrics?getMetricColor(col.metrics[ri]??0):getColor(r,ri)):getColor(r,ri)}"></div>
         <div class="row-label" title="${esc(r)}">${esc(r)}</div>
-        <input type="number" min="0" value="${col.values[ri]||0}" oninput="state.columns[${ci}].values[${ri}]=parseFloat(this.value)||0"/>
+        <input type="number" min="0" value="${col.values[ri]||0}" oninput="state.columns[${ci}].values[${ri}]=parseFloat(this.value)||0" title="Value"/>
+        ${showMetrics?`<input type="number" value="${(col.metrics??[])[ri]??0}" class="metric-input" oninput="if(!state.columns[${ci}].metrics)state.columns[${ci}].metrics=[];state.columns[${ci}].metrics[${ri}]=parseFloat(this.value)||0;drawChart();" title="${esc(state.metricName||'Metric')}"/>`:'' }
       </div>`).join('');
-    block.innerHTML=`<div class="col-header"><input type="text" value="${esc(col.name)}" placeholder="Column name" oninput="state.columns[${ci}].name=this.value"/><button class="btn btn-icon" onclick="removeColumn(${ci})" title="Remove">🗑</button></div>${rows}`;
+    const inputHeaders = showMetrics
+      ? `<div class="row-line" style="margin-bottom:2px;">
+          <div style="width:10px;flex-shrink:0;"></div>
+          <div class="row-label"></div>
+          <span style="width:100px;font-size:10px;color:var(--text3);text-align:center;font-family:'DM Sans',sans-serif;">Value</span>
+          <span style="width:72px;font-size:10px;color:var(--text3);text-align:center;font-family:'DM Sans',sans-serif;" class="metric-col-header">${esc(state.metricName||'Metric')}</span>
+         </div>`
+      : '';
+    const metricHeader = '';
+    block.innerHTML=`<div class="col-header"><span class="drag-handle" title="Drag to reorder">⠿</span><input type="text" value="${esc(col.name)}" placeholder="Column name" oninput="state.columns[${ci}].name=this.value"/>${metricHeader}<button class="btn btn-icon" onclick="removeColumn(${ci})" title="Remove">🗑</button></div>${inputHeaders}${rows}`;
+    block.addEventListener('dragstart', e=>{dragSrcIdx=ci;block.classList.add('dragging');e.dataTransfer.effectAllowed='move';});
+    block.addEventListener('dragend', ()=>{block.classList.remove('dragging');document.querySelectorAll('.col-block').forEach(b=>b.classList.remove('drag-over'));});
+    block.addEventListener('dragover', e=>{e.preventDefault();e.dataTransfer.dropEffect='move';document.querySelectorAll('.col-block').forEach(b=>b.classList.remove('drag-over'));block.classList.add('drag-over');});
+    block.addEventListener('drop', e=>{
+      e.preventDefault();
+      const destIdx=parseInt(block.dataset.ci);
+      if(dragSrcIdx!==null&&dragSrcIdx!==destIdx){
+        const [moved]=state.columns.splice(dragSrcIdx,1);
+        state.columns.splice(destIdx,0,moved);
+        renderEditor();
+      }
+      dragSrcIdx=null;
+    });
     grid.appendChild(block);
   });
 }
-function addColumn(){state.columns.push({name:'New col',values:state.rows.map(()=>0)});renderEditor();}
+function addColumn(){
+  state.columns.push({name:'New col',values:state.rows.map(()=>0),metrics:state.rows.map(()=>0)});
+  renderEditor();
+}
 function removeColumn(ci){
   if(state.columns.length<=1)return alert('Must have at least one column.');
   state.columns.splice(ci,1);renderEditor();
@@ -592,12 +904,16 @@ function drawChart(){
   const grandTotal=colTotals.reduce((a,b)=>a+b,0);
   const units=getUnits();
 
-  document.getElementById('chart-total').textContent=grandTotal>0?fmtTotal(grandTotal,units):'';
+  document.getElementById('chart-total')&&(document.getElementById('chart-total').textContent='');
 
   if(grandTotal===0){svg.innerHTML=`<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#aaa" font-family="sans-serif" font-size="14">No data to display</text>`;return;}
 
-  let rects='',labels='',axes='',xCursor=0;
+  let rects='',labels='',axes='',overlay='',xCursor=0;
   const colMeta=[];
+
+  // Total badge rendered in SVG top-right
+  const totalStr=fmtTotal(grandTotal,units);
+  overlay+=`<text x="${W-PAD.right}" y="${PAD.top-4}" text-anchor="end" font-size="11" font-family="monospace" fill="#9e9c96">${esc(totalStr)}</text>`;
 
   state.columns.forEach((col,ci)=>{
     const colTotal=colTotals[ci],colFrac=colTotal/grandTotal;
@@ -607,15 +923,74 @@ function drawChart(){
     state.rows.forEach((row,ri)=>{
       const val=col.values[ri]||0;if(val<=0)return;
       const rowFrac=colTotal>0?val/colTotal:0,rectH=rowFrac*cH,yPx=PAD.top+yCursor;
-      const color=getColor(row,ri),gap=1.5;
+      const metricVal = col.metrics?.[ri] ?? 0;
+      const color = colorMode==='metric' ? getMetricColor(metricVal) : getColor(row,ri);
+      const gap=1.5;
       const rx=xPx+gap,ry=yPx+gap,rw=Math.max(rectW-gap*2,0),rh=Math.max(rectH-gap*2,0);
       const pctCol=Math.round(rowFrac*100),pctTotal=Math.round(val/grandTotal*100);
-      rects+=`<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${color}" rx="3" data-row="${esc(row)}" data-col="${esc(col.name)}" data-val="${val}" data-ri="${ri}" data-pctcol="${pctCol}" data-pcttotal="${pctTotal}" style="cursor:pointer;transition:opacity 0.1s;"/>`;
-      if(rh>24&&rw>40){
-        const lx=xPx+rectW/2,ly=yPx+rectH/2,fs=rw<70?10:11;
-        const sr=row.length>12?row.slice(0,11)+'…':row;
-        labels+=`<text x="${lx}" y="${ly-6}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.95)" font-family="sans-serif" style="pointer-events:none;">${esc(sr)}</text>`;
-        labels+=`<text x="${lx}" y="${ly+9}" text-anchor="middle" font-size="${fs}" fill="rgba(255,255,255,0.75)" font-family="monospace" style="pointer-events:none;">${fmtLabel(val,rw,units)}</text>`;
+      rects+=`<rect x="${rx}" y="${ry}" width="${rw}" height="${rh}" fill="${color}" rx="3" data-row="${esc(row)}" data-col="${esc(col.name)}" data-val="${val}" data-metric="${metricVal}" data-ri="${ri}" data-pctcol="${pctCol}" data-pcttotal="${pctTotal}" style="cursor:pointer;transition:opacity 0.1s;"/>`;
+      // Adaptive label: respects label mode (both/name/value/none), autosizes to fit
+      {
+        const lx=xPx+rectW/2, ly=yPx+rectH/2;
+        const valStr=fmtLabel(val,rw,units);
+        const labelMode=getLabelMode();
+        if(labelMode!=='none'){
+          function fits(text,fs,availW){return text.length*fs*0.58<availW-6;}
+          function truncate(text,fs,availW){
+            let s=text;
+            while(s.length>1&&!fits(s,fs,availW))s=s.slice(0,-1);
+            return s.length<text.length?s.slice(0,-1)+'…':s;
+          }
+          // Luminance check — parse rgb() or hex, return 0 (dark) to 1 (light)
+          function luminance(c){
+            let r,g,b;
+            const rgb=c.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+            if(rgb){r=+rgb[1];g=+rgb[2];b=+rgb[3];}
+            else{const h=c.replace('#','');r=parseInt(h.slice(0,2),16);g=parseInt(h.slice(2,4),16);b=parseInt(h.slice(4,6),16);}
+            const s=([r,g,b].map(v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);}));
+            return 0.2126*s[0]+0.7152*s[1]+0.0722*s[2];
+          }
+          const light = luminance(color) > 0.35;
+          const textPri  = light ? 'rgba(0,0,0,0.85)'  : 'rgba(255,255,255,0.95)';
+          const textSec  = light ? 'rgba(0,0,0,0.6)'   : 'rgba(255,255,255,0.75)';
+          const textMono = light ? 'rgba(0,0,0,0.75)'  : 'rgba(255,255,255,0.85)';
+
+          const showName=labelMode==='name'||labelMode==='both';
+          const showValue=labelMode==='value'||labelMode==='both';
+          const canTwoLine=showName&&showValue&&rh>34&&rw>28;
+          const canOneLine=rh>18&&rw>24;
+          if(canTwoLine){
+            let chosen=null;
+            for(const fs of [11,10,9,8]){
+              if(fits(valStr,fs,rw)){chosen={fs};break;}
+            }
+            if(chosen){
+              const {fs}=chosen;
+              const nameStr=truncate(row,fs,rw);
+              const lineGap=fs+3;
+              labels+=`<text x="${lx}" y="${ly-lineGap/2}" text-anchor="middle" font-size="${fs}" fill="${textPri}" font-family="sans-serif" style="pointer-events:none;">${esc(nameStr)}</text>`;
+              labels+=`<text x="${lx}" y="${ly+lineGap/2+fs-1}" text-anchor="middle" font-size="${fs}" fill="${textSec}" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+            } else if(canOneLine){
+              for(const fs of [11,10,9,8]){
+                if(fits(valStr,fs,rw)){
+                  labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="${textMono}" font-family="monospace" style="pointer-events:none;">${esc(valStr)}</text>`;
+                  break;
+                }
+              }
+            }
+          } else if(canOneLine){
+            const str=showName&&!showValue?row:valStr;
+            const isMono=!showName||showValue;
+            for(const fs of [11,10,9,8]){
+              const display=showName&&!showValue?truncate(str,fs,rw):str;
+              if(fits(display,fs,rw)){
+                labels+=`<text x="${lx}" y="${ly+fs*0.35}" text-anchor="middle" font-size="${fs}" fill="${isMono?textMono:textPri}" font-family="${isMono?'monospace':'sans-serif'}" style="pointer-events:none;">${esc(display)}</text>`;
+                break;
+              }
+            }
+          }
+          // else: too small — show nothing (tooltip still works)
+        }
       }
       yCursor+=rectH;
     });
@@ -629,30 +1004,55 @@ function drawChart(){
   });
   axes+=`<line x1="${PAD.left}" y1="${PAD.top}" x2="${PAD.left}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
   axes+=`<line x1="${PAD.left}" y1="${PAD.top+cH}" x2="${PAD.left+cW}" y2="${PAD.top+cH}" stroke="#c8c6bc" stroke-width="1"/>`;
-  colMeta.forEach(c=>{
+  colMeta.forEach((c,ci)=>{
     const mid=c.x+c.w/2;
     axes+=`<text x="${mid}" y="${PAD.top+cH+16}" text-anchor="middle" font-size="12" fill="#1a1917" font-family="sans-serif" font-weight="500">${esc(c.name)}</text>`;
     axes+=`<text x="${mid}" y="${PAD.top+cH+30}" text-anchor="middle" font-size="10" fill="#a09e98" font-family="monospace">${c.pct}%</text>`;
     if(c.x>PAD.left)axes+=`<line x1="${c.x}" y1="${PAD.top}" x2="${c.x}" y2="${PAD.top+cH}" stroke="#e8e6de" stroke-width="0.5"/>`;
+    // Reorder arrows removed — use drag handles in Edit data tab instead
   });
 
   svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
-  svg.innerHTML=axes+rects+labels;
+  svg.innerHTML=axes+rects+labels+overlay;
 
   svg.querySelectorAll('rect[data-row]').forEach(r=>{
     r.addEventListener('mouseenter',e=>{
-      document.getElementById('tooltip').innerHTML=`<strong>${r.dataset.row}</strong><span style="color:var(--text);font-weight:500;">${fmtVal(parseInt(r.dataset.val))}</span><br><span class="tip-pct">${r.dataset.pctcol}% of ${r.dataset.col} · ${r.dataset.pcttotal}% of total</span><br><span class="tip-pct" style="color:var(--text3);">Click to change color</span>`;
+      const metricLine = colorMode==='metric'
+        ? `<br><span class="tip-pct">${esc(state.metricName||'Metric')}: <strong>${r.dataset.metric}</strong></span>`
+        : `<br><span class="tip-pct" style="color:var(--text3);">Click to change color</span>`;
+      document.getElementById('tooltip').innerHTML=`<strong>${r.dataset.row}</strong><span style="color:var(--text);font-weight:500;">${fmtVal(parseInt(r.dataset.val))}</span><br><span class="tip-pct">${r.dataset.pctcol}% of ${r.dataset.col} · ${r.dataset.pcttotal}% of total</span>${metricLine}`;
       document.getElementById('tooltip').style.display='block';
       r.style.opacity='0.82';moveTip(e);
     });
     r.addEventListener('mousemove',moveTip);
     r.addEventListener('mouseleave',()=>{document.getElementById('tooltip').style.display='none';r.style.opacity='1';});
-    r.addEventListener('click',e=>{document.getElementById('tooltip').style.display='none';r._lastMouseX=e.clientX;r._lastMouseY=e.clientY;openColorPicker(r.dataset.row,r);});
+    r.addEventListener('click',e=>{
+      if(colorMode==='metric') return; // no color picker in metric mode
+      document.getElementById('tooltip').style.display='none';
+      r._lastMouseX=e.clientX;r._lastMouseY=e.clientY;
+      openColorPicker(r.dataset.row,r);
+    });
   });
 
-  document.getElementById('legend').innerHTML=state.rows.map((row,ri)=>
-    `<div class="legend-item" data-color-trigger="1" onclick="openColorPicker('${esc(row)}',this)" title="Click to change color"><div class="legend-dot" style="background:${getColor(row,ri)}"></div>${esc(row)}</div>`
-  ).join('');
+  if(colorMode==='metric'){
+    document.getElementById('legend-row').style.display='none';
+    document.getElementById('legend-metric').style.display='';
+    updateGradientBar();
+  } else {
+    document.getElementById('legend-row').style.display='';
+    document.getElementById('legend-metric').style.display='none';
+    document.getElementById('legend-row').innerHTML=state.rows.map((row,ri)=>
+      `<div class="legend-item" data-color-trigger="1" onclick="openColorPicker('${esc(row)}',this)" title="Click to change color"><div class="legend-dot" style="background:${getColor(row,ri)}"></div>${esc(row)}</div>`
+    ).join('');
+  }
+}
+
+function moveColumn(ci, dir){
+  const target = ci + dir;
+  if(target < 0 || target >= state.columns.length) return;
+  [state.columns[ci], state.columns[target]] = [state.columns[target], state.columns[ci]];
+  drawChart();
+  if(document.getElementById('panel-data').classList.contains('active')) renderEditor();
 }
 
 function moveTip(e){
@@ -669,6 +1069,7 @@ document.querySelectorAll('[contenteditable]').forEach(el=>{
   el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();el.blur();}});
 });
 
+renderThemeBtn();
 drawChart();
 window.addEventListener('resize',()=>{if(document.getElementById('panel-chart').classList.contains('active'))drawChart();});
 </script>
